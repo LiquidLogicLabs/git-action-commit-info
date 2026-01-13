@@ -74,6 +74,12 @@ class Logger {
             core.debug(message);
         }
     }
+    /**
+     * Check if verbose logging is enabled
+     */
+    isVerbose() {
+        return this.verbose;
+    }
 }
 exports.Logger = Logger;
 //# sourceMappingURL=logger.js.map

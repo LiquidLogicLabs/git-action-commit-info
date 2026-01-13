@@ -14,8 +14,8 @@ This document provides information for developers who want to contribute to this
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/LiquidLogicLabs/git-action-tag-floating-version.git
-cd git-action-tag-floating-version
+git clone https://github.com/LiquidLogicLabs/git-action-commit-info.git
+cd git-action-commit-info
 ```
 
 ### Install Dependencies
@@ -55,14 +55,14 @@ npm test
 ## Project Structure
 
 ```
-git-action-tag-floating-version/
+git-action-commit-info/
 ├── src/                    # TypeScript source code
 │   ├── index.ts           # Main entry point
 │   ├── types.ts           # TypeScript type definitions
-│   ├── version.ts         # Version parsing logic
+│   ├── logger.ts          # Logger utility class
 │   ├── git.ts             # Git operations
 │   └── __tests__/         # Test files
-│       ├── version.test.ts
+│       ├── logger.test.ts
 │       └── integration.test.ts
 ├── dist/                   # Built output (committed to git)
 │   └── index.js           # Bundled action code
@@ -70,6 +70,7 @@ git-action-tag-floating-version/
 │   └── workflows/
 │       ├── ci.yml         # CI workflow
 │       ├── test.yml       # Reusable test workflow
+│       ├── e2e-tests.yml  # E2E tests workflow
 │       └── release.yml    # Release workflow
 ├── docs/                   # Documentation
 │   ├── DEVELOPMENT.md     # This file
@@ -113,6 +114,7 @@ git-action-tag-floating-version/
 - **Linting**: ESLint is used for code quality (run `npm run lint`)
 - **Formatting**: Prettier is used for code formatting (run `npm run format`)
 - **Type Safety**: Leverage TypeScript types throughout the codebase
+- **Logging**: Use the standardized `Logger` class for all logging operations
 
 ### Available Scripts
 
@@ -121,6 +123,8 @@ git-action-tag-floating-version/
 npm run build          # Compile TypeScript and bundle with ncc
 npm run package        # Alias for build
 npm test               # Run all tests (unit + integration)
+npm run test:unit      # Run unit tests only
+npm run test:integration  # Run integration tests only
 npm run test:watch     # Run tests in watch mode
 npm run test:coverage  # Generate test coverage report
 npm run lint           # Run ESLint
@@ -130,7 +134,6 @@ npm run format         # Format code with Prettier
 npm run test:act           # Run test workflow via act
 npm run test:act:verbose   # Run test workflow with verbose output
 npm run test:act:ci        # Run CI workflow via act
-npm run test:act:release   # Run release workflow via act
 npm run lint:act           # Run lint job via act
 
 # Releasing
@@ -238,7 +241,7 @@ npm run test:coverage # Generate coverage report
 
 ## Releasing
 
-This project uses [`standard-version`](https://github.com/conventional-changelog/standard-version) for automated release tag creation with commit summaries.
+This project uses [`standard-version`](https://github.com/conventional-changelog/standard-version) for automated release tag creation. Release notes are automatically generated from PRs and commits using `release-changelog-builder-action`.
 
 ### Pre-Release Checklist
 
@@ -282,38 +285,18 @@ npm run release:major
 
 The release command automatically:
 1. Bumps the version in `package.json` (patch/minor/major)
-2. Analyzes commits since the last tag to generate a commit summary
-3. Creates a git commit with message like "chore: release v1.0.1"
-4. Creates a git tag with a message that includes:
-   - Version number
-   - Summary of commits since last release
-   - Formatted changelog-style content
-5. Pushes the tag and commit to trigger the GitHub Actions release workflow
+2. Creates a git commit with message like "chore(release): 1.0.1"
+3. Creates a git tag (e.g., `v1.0.1`)
+4. Pushes the tag and commit to trigger the GitHub Actions release workflow
 
 The release workflow then:
-- Runs lint and tests as a safety check
+- Runs CI and E2E tests as a safety check
 - Builds and packages the action
-- Generates release notes from PRs/commits
+- Generates release notes from PRs/commits using `release-changelog-builder-action`
 - Creates a GitHub release
-- Creates/updates floating version tags
+- Creates/updates floating version tags (`v1`, `v1.0`, `latest`)
 
-### Tag Messages
-
-Release tag messages automatically include commit summaries formatted like:
-```
-v1.0.1
-
-### Features
-* Add new feature
-
-### Bug Fixes
-* Fix critical bug
-
-### Chores
-* Update dependencies
-```
-
-This works with conventional commits (recommended) or regular commit messages.
+**Note**: This project uses `--skip.changelog` with `standard-version` because release notes are automatically generated from PRs and commits in the release workflow.
 
 ## Troubleshooting
 
@@ -337,6 +320,7 @@ If `act` fails:
 1. Verify `act` is installed: `act --version`
 2. Check `~/.actrc` configuration file exists
 3. Ensure Docker is running
+4. Verify workflow event files exist in `.github/workflows/.act/`
 
 ## Resources
 
@@ -351,4 +335,3 @@ If `act` fails:
 - Open an issue on GitHub for bug reports or feature requests
 - Check existing issues for similar problems
 - Review the [TESTING.md](./TESTING.md) for testing-related questions
-

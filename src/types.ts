@@ -5,6 +5,7 @@ export interface CommitInfo {
   sha: string;
   shortSha: string;
   message: string;
+  messageRaw: string;
   author: string;
   authorEmail: string;
   date: string;

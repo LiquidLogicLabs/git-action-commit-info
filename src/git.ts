@@ -1,4 +1,3 @@
-import * as core from "@actions/core";
 import { exec } from "@actions/exec";
 import * as path from "path";
 import { CommitInfo } from "./types";
@@ -49,7 +48,7 @@ export async function getCommitInfo(offset: number, logger: Logger): Promise<Com
 				output += data.toString();
 			},
 		},
-		silent: !logger.verbose,
+		silent: !logger.isVerbose(),
 		cwd,
 	};
 	
@@ -74,20 +73,34 @@ export async function getCommitInfo(offset: number, logger: Logger): Promise<Com
 			throw new Error(`Invalid commit SHA format: ${sha}`);
 		}
 		
-		if (logger.verbose) {
-			core.info(`  → Resolved commit SHA: ${sha}`);
-			core.info(`  → Short SHA: ${shortSha}`);
-			core.info(`  → Message: ${message}`);
-			core.info(`  → Author: ${author} <${authorEmail}>`);
-			core.info(`  → Date: ${committerDate}`);
-		}
+		// Get full commit message (can contain newlines and special characters)
+		let messageRawOutput = "";
+		const messageRawOptions = {
+			listeners: {
+				stdout: (data: Buffer) => {
+					messageRawOutput += data.toString();
+				},
+			},
+			silent: !logger.isVerbose(),
+			cwd,
+		};
 		
+		await exec("git", ["log", "-1", "--format=%B", gitRef], messageRawOptions);
+		const messageRaw = messageRawOutput.trim();
+		
+		logger.debug(`Resolved commit SHA: ${sha}`);
+		logger.debug(`Short SHA: ${shortSha}`);
+		logger.debug(`Message: ${message}`);
+		logger.debug(`Message (full): ${messageRaw.split('\n').length} lines`);
+		logger.debug(`Author: ${author} <${authorEmail}>`);
+		logger.debug(`Date: ${committerDate}`);
 		logger.debug(`Resolved commit info: SHA=${sha}, shortSha=${shortSha}, message=${message}`);
 		
 		const commitInfo: CommitInfo = {
 			sha,
 			shortSha,
 			message,
+			messageRaw,
 			author,
 			authorEmail,
 			date: committerDate,

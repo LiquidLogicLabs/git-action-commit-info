@@ -22,4 +22,8 @@ export declare class Logger {
      * Falls back to core.debug() when verbose is false (for when ACTIONS_STEP_DEBUG is set at workflow level)
      */
     debug(message: string): void;
+    /**
+     * Check if verbose logging is enabled
+     */
+    isVerbose(): boolean;
 }

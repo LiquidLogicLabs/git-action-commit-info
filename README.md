@@ -10,7 +10,8 @@ A simple GitHub Action that retrieves commit information (SHA, message, author, 
 
 - ✅ **Simple offset-based lookup**: Get commit info using an offset from HEAD (0 = HEAD, 1 = HEAD~1, etc.)
 - ✅ **Comprehensive commit info**: Retrieves full SHA, short SHA, commit message, author name, author email, and commit date
-- ✅ **Support for positive and negative offsets**: Both positive and negative offsets are supported
+- ✅ **Backwards-only navigation**: Always goes backwards in history from HEAD (HEAD~X format)
+- ✅ **Forgiving input**: Negative offsets are accepted but converted to absolute value for convenience
 - ✅ **Local git commands only**: Uses only local git commands (no remote operations)
 - ✅ **Verbose logging**: Optional verbose debug logging for troubleshooting
 - ✅ **TypeScript implementation**: Built with TypeScript for type safety and reliability
@@ -29,7 +30,8 @@ A simple GitHub Action that retrieves commit information (SHA, message, author, 
 This retrieves information about the current HEAD commit and sets outputs:
 - `sha`: Full commit SHA (40 characters)
 - `shortSha`: Short commit SHA (7 characters)
-- `message`: Commit message (first line)
+- `message`: Commit message (first line/subject)
+- `messageRaw`: Full commit message (includes all lines, preserves newlines)
 - `author`: Author name
 - `authorEmail`: Author email address
 - `date`: Commit date (ISO format)
@@ -59,6 +61,7 @@ This retrieves information about the current HEAD commit and sets outputs:
     echo "Commit SHA: ${{ steps.commit-info.outputs.sha }}"
     echo "Short SHA: ${{ steps.commit-info.outputs.shortSha }}"
     echo "Message: ${{ steps.commit-info.outputs.message }}"
+    echo "Full Message: ${{ steps.commit-info.outputs.messageRaw }}"
     echo "Author: ${{ steps.commit-info.outputs.author }}"
 ```
 
@@ -91,6 +94,7 @@ This retrieves information about the current HEAD commit and sets outputs:
     echo "Full SHA: ${{ steps.commit-info.outputs.sha }}"
     echo "Short SHA: ${{ steps.commit-info.outputs.shortSha }}"
     echo "Message: ${{ steps.commit-info.outputs.message }}"
+    echo "Full Message: ${{ steps.commit-info.outputs.messageRaw }}"
     echo "Author: ${{ steps.commit-info.outputs.author }} <${{ steps.commit-info.outputs.authorEmail }}>"
     echo "Date: ${{ steps.commit-info.outputs.dateISO }}"
 
@@ -101,7 +105,7 @@ This retrieves information about the current HEAD commit and sets outputs:
     echo "Working with commit: $COMMIT_SHA"
 ```
 
-### Negative Offset Support
+### Negative Offset Support (Convenience Feature)
 
 ```yaml
 - name: Get Commit Info with Negative Offset
@@ -110,13 +114,13 @@ This retrieves information about the current HEAD commit and sets outputs:
     offset: '-1'  # Negative offsets are converted to absolute value (same as 1)
 ```
 
-**Note**: Git doesn't support negative offsets natively (you can't go "forward" in history). Negative offsets are converted to their absolute value, so `offset: '-1'` is equivalent to `offset: '1'`.
+**Note**: The offset always goes backwards from HEAD. Negative offsets are accepted as a convenience feature - if you accidentally use a negative number, it will be converted to its absolute value. For example, `offset: '-1'` becomes `offset: '1'` (both resolve to HEAD~1). You cannot go "forward" in commit history.
 
 ## Inputs
 
 | Input | Description | Required | Default |
 | ------- | ------------- | ---------- | --------- |
-| `offset` | Offset from HEAD to look up (0 = HEAD, 1 = HEAD~1, 2 = HEAD~2, etc.). Supports positive and negative integers. Negative offsets are converted to absolute value. | No | `'0'` |
+| `offset` | Offset from HEAD to look up. Always goes backwards in history: 0 = HEAD, 1 = HEAD~1, 2 = HEAD~2, etc. Negative offsets are accepted but converted to absolute value (e.g., -1 becomes 1). | No | `'0'` |
 | `verbose` | Enable verbose debug logging. Sets ACTIONS_STEP_DEBUG=true environment variable and enables detailed debug output | No | `'false'` |
 
 ## Outputs
@@ -126,6 +130,7 @@ This retrieves information about the current HEAD commit and sets outputs:
 | `sha` | Full commit SHA (40 characters) |
 | `shortSha` | Short commit SHA (7 characters) |
 | `message` | Commit message (first line/subject) |
+| `messageRaw` | Full commit message (includes all lines, preserves newlines) |
 | `author` | Author name |
 | `authorEmail` | Author email address |
 | `date` | Commit date (ISO format) |
@@ -190,13 +195,18 @@ If the offset exceeds the commit history, the action will fail with a clear erro
 
 ## Offset Behavior
 
+The offset **always goes backwards** from HEAD in the commit history:
+
 - **offset=0**: HEAD (current commit)
 - **offset=1**: HEAD~1 (one commit before HEAD)
 - **offset=2**: HEAD~2 (two commits before HEAD)
-- **offset=-1**: HEAD~1 (negative offsets are converted to absolute value)
-- **offset=-2**: HEAD~2 (same as offset=2)
+- **offset=3**: HEAD~3 (three commits before HEAD)
 
-**Important**: Git doesn't support going "forward" in history, so negative offsets are converted to their absolute value. This means `-1` is equivalent to `1`, `-2` is equivalent to `2`, etc.
+**Negative offsets**: Negative offsets are accepted for convenience but are converted to their absolute value:
+- **offset=-1**: Converted to 1 → HEAD~1 (same as offset=1)
+- **offset=-2**: Converted to 2 → HEAD~2 (same as offset=2)
+
+**Important**: Git doesn't support going "forward" in history. The offset always navigates backwards from HEAD. Negative offsets are provided as a convenience feature - if you accidentally use a negative number, it will still work by converting it to the equivalent positive offset.
 
 ## Error Handling
 

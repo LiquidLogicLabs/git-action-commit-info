@@ -41,26 +41,27 @@ export async function run(): Promise<void> {
 		logger.debug(`  verbose: ${inputs.verbose}`);
 		
 		// Get commit information
-		core.info(`Getting commit info for offset: ${offset}`);
+		logger.info(`Getting commit info for offset: ${offset}`);
 		const commitInfo = await getCommitInfo(offset, logger);
 		
 		// Set outputs
 		core.setOutput("sha", commitInfo.sha);
 		core.setOutput("shortSha", commitInfo.shortSha);
 		core.setOutput("message", commitInfo.message);
+		core.setOutput("messageRaw", commitInfo.messageRaw);
 		core.setOutput("author", commitInfo.author);
 		core.setOutput("authorEmail", commitInfo.authorEmail);
 		core.setOutput("date", commitInfo.date);
 		core.setOutput("dateISO", commitInfo.dateISO);
 		
 		// Log summary
-		core.info("✅ Successfully retrieved commit information");
-		core.info(`📊 Commit Info:`);
-		core.info(`   SHA: ${commitInfo.sha}`);
-		core.info(`   Short SHA: ${commitInfo.shortSha}`);
-		core.info(`   Message: ${commitInfo.message}`);
-		core.info(`   Author: ${commitInfo.author} <${commitInfo.authorEmail}>`);
-		core.info(`   Date: ${commitInfo.dateISO}`);
+		logger.info("✅ Successfully retrieved commit information");
+		logger.info(`📊 Commit Info:`);
+		logger.info(`   SHA: ${commitInfo.sha}`);
+		logger.info(`   Short SHA: ${commitInfo.shortSha}`);
+		logger.info(`   Message: ${commitInfo.message}`);
+		logger.info(`   Author: ${commitInfo.author} <${commitInfo.authorEmail}>`);
+		logger.info(`   Date: ${commitInfo.dateISO}`);
 		
 		logger.debug("Action completed successfully");
 	} catch (error) {

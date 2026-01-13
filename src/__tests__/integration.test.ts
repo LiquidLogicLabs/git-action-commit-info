@@ -74,6 +74,7 @@ function getCommitInfoGit(ref: string): {
 	sha: string;
 	shortSha: string;
 	message: string;
+	messageRaw: string;
 	author: string;
 	authorEmail: string;
 	date: string;
@@ -83,7 +84,14 @@ function getCommitInfoGit(ref: string): {
 		tempRepoDir!
 	);
 	const [sha, shortSha, message, author, authorEmail, date] = output.split("|");
-	return { sha, shortSha, message, author, authorEmail, date };
+	
+	// Get full commit message
+	const messageRaw = runGitSync(
+		["log", "-1", "--format=%B", ref],
+		tempRepoDir!
+	).trim();
+	
+	return { sha, shortSha, message, messageRaw, author, authorEmail, date };
 }
 
 // Helper to create a commit
@@ -166,9 +174,11 @@ describe("Integration Tests", () => {
 		await runAction();
 
 		// Verify outputs - offset 0 should get HEAD (most recent commit, index 3)
+		const expectedInfo = getCommitInfoGit("HEAD");
 		expect(mockSetOutput).toHaveBeenCalledWith("sha", commitShas[3]);
 		expect(mockSetOutput).toHaveBeenCalledWith("shortSha", commitShas[3].substring(0, 7));
 		expect(mockSetOutput).toHaveBeenCalledWith("message", "Fourth commit");
+		expect(mockSetOutput).toHaveBeenCalledWith("messageRaw", expectedInfo.messageRaw);
 		expect(mockSetOutput).toHaveBeenCalledWith("author", "Test User");
 		expect(mockSetOutput).toHaveBeenCalledWith("authorEmail", "test@example.com");
 		expect(mockSetOutput).toHaveBeenCalledWith("date", expect.any(String));
@@ -190,6 +200,7 @@ describe("Integration Tests", () => {
 		expect(mockSetOutput).toHaveBeenCalledWith("sha", expectedInfo.sha);
 		expect(mockSetOutput).toHaveBeenCalledWith("shortSha", expectedInfo.shortSha);
 		expect(mockSetOutput).toHaveBeenCalledWith("message", expectedInfo.message);
+		expect(mockSetOutput).toHaveBeenCalledWith("messageRaw", expectedInfo.messageRaw);
 		expect(mockSetOutput).toHaveBeenCalledWith("author", expectedInfo.author);
 		expect(mockSetOutput).toHaveBeenCalledWith("authorEmail", expectedInfo.authorEmail);
 
@@ -209,6 +220,7 @@ describe("Integration Tests", () => {
 		expect(mockSetOutput).toHaveBeenCalledWith("sha", expectedInfo.sha);
 		expect(mockSetOutput).toHaveBeenCalledWith("shortSha", expectedInfo.shortSha);
 		expect(mockSetOutput).toHaveBeenCalledWith("message", expectedInfo.message);
+		expect(mockSetOutput).toHaveBeenCalledWith("messageRaw", expectedInfo.messageRaw);
 
 		console.log("✅ Commit info for HEAD~2 retrieved correctly");
 	});
@@ -226,6 +238,7 @@ describe("Integration Tests", () => {
 		expect(mockSetOutput).toHaveBeenCalledWith("sha", expectedInfo.sha);
 		expect(mockSetOutput).toHaveBeenCalledWith("shortSha", expectedInfo.shortSha);
 		expect(mockSetOutput).toHaveBeenCalledWith("message", expectedInfo.message);
+		expect(mockSetOutput).toHaveBeenCalledWith("messageRaw", expectedInfo.messageRaw);
 
 		console.log("✅ Commit info with negative offset retrieved correctly");
 	});
@@ -239,9 +252,11 @@ describe("Integration Tests", () => {
 		await runAction();
 
 		// Verify outputs - offset 0 should get HEAD (most recent commit, index 3)
+		const expectedInfo = getCommitInfoGit("HEAD");
 		expect(mockSetOutput).toHaveBeenCalledWith("sha", commitShas[3]);
 		expect(mockSetOutput).toHaveBeenCalledWith("shortSha", commitShas[3].substring(0, 7));
 		expect(mockSetOutput).toHaveBeenCalledWith("message", "Fourth commit");
+		expect(mockSetOutput).toHaveBeenCalledWith("messageRaw", expectedInfo.messageRaw);
 
 		// Verify verbose logging was used
 		expect(mockInfo).toHaveBeenCalledWith(expect.stringContaining("Verbose logging enabled"));
@@ -285,8 +300,10 @@ describe("Integration Tests", () => {
 		await runAction();
 
 		// Should default to offset 0 (HEAD - most recent commit, index 3)
+		const expectedInfo = getCommitInfoGit("HEAD");
 		expect(mockSetOutput).toHaveBeenCalledWith("sha", commitShas[3]);
 		expect(mockSetOutput).toHaveBeenCalledWith("message", "Fourth commit");
+		expect(mockSetOutput).toHaveBeenCalledWith("messageRaw", expectedInfo.messageRaw);
 
 		console.log("✅ Default offset works correctly");
 	});

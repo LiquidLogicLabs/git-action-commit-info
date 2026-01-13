@@ -25683,7 +25683,6 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getCommitInfo = getCommitInfo;
-const core = __importStar(__nccwpck_require__(7484));
 const exec_1 = __nccwpck_require__(5236);
 const path = __importStar(__nccwpck_require__(6928));
 /**
@@ -25726,7 +25725,7 @@ async function getCommitInfo(offset, logger) {
                 output += data.toString();
             },
         },
-        silent: !logger.verbose,
+        silent: !logger.isVerbose(),
         cwd,
     };
     try {
@@ -25745,18 +25744,31 @@ async function getCommitInfo(offset, logger) {
         if (!sha || sha.length !== 40) {
             throw new Error(`Invalid commit SHA format: ${sha}`);
         }
-        if (logger.verbose) {
-            core.info(`  → Resolved commit SHA: ${sha}`);
-            core.info(`  → Short SHA: ${shortSha}`);
-            core.info(`  → Message: ${message}`);
-            core.info(`  → Author: ${author} <${authorEmail}>`);
-            core.info(`  → Date: ${committerDate}`);
-        }
+        // Get full commit message (can contain newlines and special characters)
+        let messageRawOutput = "";
+        const messageRawOptions = {
+            listeners: {
+                stdout: (data) => {
+                    messageRawOutput += data.toString();
+                },
+            },
+            silent: !logger.isVerbose(),
+            cwd,
+        };
+        await (0, exec_1.exec)("git", ["log", "-1", "--format=%B", gitRef], messageRawOptions);
+        const messageRaw = messageRawOutput.trim();
+        logger.debug(`Resolved commit SHA: ${sha}`);
+        logger.debug(`Short SHA: ${shortSha}`);
+        logger.debug(`Message: ${message}`);
+        logger.debug(`Message (full): ${messageRaw.split('\n').length} lines`);
+        logger.debug(`Author: ${author} <${authorEmail}>`);
+        logger.debug(`Date: ${committerDate}`);
         logger.debug(`Resolved commit info: SHA=${sha}, shortSha=${shortSha}, message=${message}`);
         const commitInfo = {
             sha,
             shortSha,
             message,
+            messageRaw,
             author,
             authorEmail,
             date: committerDate,
@@ -25851,24 +25863,25 @@ async function run() {
         logger.debug(`  offset: ${inputs.offset}`);
         logger.debug(`  verbose: ${inputs.verbose}`);
         // Get commit information
-        core.info(`Getting commit info for offset: ${offset}`);
+        logger.info(`Getting commit info for offset: ${offset}`);
         const commitInfo = await (0, git_1.getCommitInfo)(offset, logger);
         // Set outputs
         core.setOutput("sha", commitInfo.sha);
         core.setOutput("shortSha", commitInfo.shortSha);
         core.setOutput("message", commitInfo.message);
+        core.setOutput("messageRaw", commitInfo.messageRaw);
         core.setOutput("author", commitInfo.author);
         core.setOutput("authorEmail", commitInfo.authorEmail);
         core.setOutput("date", commitInfo.date);
         core.setOutput("dateISO", commitInfo.dateISO);
         // Log summary
-        core.info("✅ Successfully retrieved commit information");
-        core.info(`📊 Commit Info:`);
-        core.info(`   SHA: ${commitInfo.sha}`);
-        core.info(`   Short SHA: ${commitInfo.shortSha}`);
-        core.info(`   Message: ${commitInfo.message}`);
-        core.info(`   Author: ${commitInfo.author} <${commitInfo.authorEmail}>`);
-        core.info(`   Date: ${commitInfo.dateISO}`);
+        logger.info("✅ Successfully retrieved commit information");
+        logger.info(`📊 Commit Info:`);
+        logger.info(`   SHA: ${commitInfo.sha}`);
+        logger.info(`   Short SHA: ${commitInfo.shortSha}`);
+        logger.info(`   Message: ${commitInfo.message}`);
+        logger.info(`   Author: ${commitInfo.author} <${commitInfo.authorEmail}>`);
+        logger.info(`   Date: ${commitInfo.dateISO}`);
         logger.debug("Action completed successfully");
     }
     catch (error) {
@@ -25970,6 +25983,12 @@ class Logger {
         else {
             core.debug(message);
         }
+    }
+    /**
+     * Check if verbose logging is enabled
+     */
+    isVerbose() {
+        return this.verbose;
     }
 }
 exports.Logger = Logger;

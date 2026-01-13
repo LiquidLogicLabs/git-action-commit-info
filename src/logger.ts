@@ -43,4 +43,11 @@ export class Logger {
 			core.debug(message);
 		}
 	}
+
+	/**
+	 * Check if verbose logging is enabled
+	 */
+	isVerbose(): boolean {
+		return this.verbose;
+	}
 }

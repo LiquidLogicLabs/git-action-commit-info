@@ -34,7 +34,6 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getCommitInfo = getCommitInfo;
-const core = __importStar(require("@actions/core"));
 const exec_1 = require("@actions/exec");
 const path = __importStar(require("path"));
 /**
@@ -77,7 +76,7 @@ async function getCommitInfo(offset, logger) {
                 output += data.toString();
             },
         },
-        silent: !logger.verbose,
+        silent: !logger.isVerbose(),
         cwd,
     };
     try {
@@ -96,18 +95,31 @@ async function getCommitInfo(offset, logger) {
         if (!sha || sha.length !== 40) {
             throw new Error(`Invalid commit SHA format: ${sha}`);
         }
-        if (logger.verbose) {
-            core.info(`  → Resolved commit SHA: ${sha}`);
-            core.info(`  → Short SHA: ${shortSha}`);
-            core.info(`  → Message: ${message}`);
-            core.info(`  → Author: ${author} <${authorEmail}>`);
-            core.info(`  → Date: ${committerDate}`);
-        }
+        // Get full commit message (can contain newlines and special characters)
+        let messageRawOutput = "";
+        const messageRawOptions = {
+            listeners: {
+                stdout: (data) => {
+                    messageRawOutput += data.toString();
+                },
+            },
+            silent: !logger.isVerbose(),
+            cwd,
+        };
+        await (0, exec_1.exec)("git", ["log", "-1", "--format=%B", gitRef], messageRawOptions);
+        const messageRaw = messageRawOutput.trim();
+        logger.debug(`Resolved commit SHA: ${sha}`);
+        logger.debug(`Short SHA: ${shortSha}`);
+        logger.debug(`Message: ${message}`);
+        logger.debug(`Message (full): ${messageRaw.split('\n').length} lines`);
+        logger.debug(`Author: ${author} <${authorEmail}>`);
+        logger.debug(`Date: ${committerDate}`);
         logger.debug(`Resolved commit info: SHA=${sha}, shortSha=${shortSha}, message=${message}`);
         const commitInfo = {
             sha,
             shortSha,
             message,
+            messageRaw,
             author,
             authorEmail,
             date: committerDate,

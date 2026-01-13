@@ -3,7 +3,7 @@ description: 'Gets information about a commit (including short and long SHA) usi
 author: 'LiquidLogicLabs'
 inputs:
   offset:
-    description: 'Offset from HEAD to look up (defaults to 0 which means HEAD). Supports positive and negative offsets (e.g., 0 = HEAD, 1 = HEAD~1, -1 = HEAD~1)'
+    description: 'Offset from HEAD to look up (defaults to 0 which means HEAD). Always goes backwards in history (0 = HEAD, 1 = HEAD~1, 2 = HEAD~2, etc.). Negative offsets are accepted but converted to absolute value (e.g., -1 becomes 1).'
     required: false
     default: '0'
   verbose:
@@ -16,7 +16,9 @@ outputs:
   shortSha:
     description: 'Short commit SHA (7 characters)'
   message:
-    description: 'Commit message (first line)'
+    description: 'Commit message (first line/subject)'
+  messageRaw:
+    description: 'Full commit message (includes all lines, preserves newlines)'
   author:
     description: 'Author name'
   authorEmail:

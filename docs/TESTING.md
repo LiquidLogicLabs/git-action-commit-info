@@ -6,7 +6,7 @@ This document outlines all tests currently implemented in this project and how t
 
 The project uses **Jest** for both unit and integration testing. All tests are located in `src/__tests__/` and include:
 
-- **Unit Tests**: Test individual functions in isolation (`version.test.ts`)
+- **Unit Tests**: Test individual functions in isolation (`logger.test.ts`)
 - **Integration Tests**: Test the full action workflow with real git operations (`integration.test.ts`)
 
 ## Running Tests
@@ -42,101 +42,43 @@ This generates:
 
 ## Unit Tests
 
-**File**: `src/__tests__/version.test.ts`
+**File**: `src/__tests__/logger.test.ts`
 
-Tests the version parsing and tag name creation logic in `src/version.ts`.
+Tests the Logger utility class that provides consistent logging across the action.
 
 ### Test Coverage
 
-#### `parseVersion()` Function
+#### Logger Class
 
-**Tags with 'v' prefix:**
-- ✅ Parses `v1.2.3` correctly
-- ✅ Parses `v2.0.0` correctly
-- ✅ Parses `v10.20.30` correctly
+**With verbose disabled:**
+- ✅ Logs info messages correctly
+- ✅ Logs warning messages correctly
+- ✅ Logs error messages correctly
+- ✅ Logs debug messages using `core.debug()` when verbose is false
+- ✅ Exposes verbose property correctly
 
-**Tags without 'v' prefix:**
-- ✅ Parses `1.2.3` correctly
-- ✅ Parses `2.0.0` correctly
+**With verbose enabled:**
+- ✅ Logs debug messages using `core.info()` with `[DEBUG]` prefix when verbose is true
+- ✅ Exposes verbose property correctly
 
-**Tags with `refs/tags/` prefix:**
-- ✅ Parses `refs/tags/v1.2.3` correctly
-- ✅ Parses `refs/tags/1.2.3` correctly
+**Default constructor:**
+- ✅ Defaults to verbose=false when no argument provided
 
-**Prerelease versions:**
-- ✅ Detects prerelease with v prefix (`v1.2.3-beta.1`)
-- ✅ Detects prerelease without v prefix (`1.2.3-alpha`)
-- ✅ Detects prerelease with multiple segments (`v2.0.0-rc.1.2`)
-
-**Build metadata:**
-- ✅ Parses version with build metadata (`v1.2.3+build.123`)
-- ✅ Parses prerelease with build metadata (`v1.2.3-beta.1+build.456`)
-
-**Invalid versions:**
-- ✅ Throws error for invalid format
-- ✅ Throws error for missing patch version (`v1.2`)
-- ✅ Throws error for non-numeric versions (`v1.2.x`)
-
-#### `createTagName()` Function
-
-- ✅ Creates major tag with default prefix (`v2`)
-- ✅ Creates major tag with custom prefix (`release-3`)
-- ✅ Creates minor tag with default prefix (`v2.3`)
-- ✅ Creates minor tag with custom prefix (`release-1.2`)
-- ✅ Handles zero versions (`v0`, `v0.0`)
-- ✅ Handles large version numbers (`v10.20`)
-
-**Total Unit Tests**: 21 test cases
+**Total Unit Tests**: 7 test cases
 
 ### Complete Test Case Reference
 
-#### Unit Tests: `parseVersion()` Function
+#### Unit Tests: Logger Class
 
-| Test Case | Input | Expected Output |
-|-----------|-------|----------------|
-| Parse v1.2.3 | `tag: "v1.2.3"` | `{major: 1, minor: 2, patch: 3, isPrerelease: false, original: "v1.2.3"}` |
-| Parse v2.0.0 | `tag: "v2.0.0"` | `{major: 2, minor: 0, patch: 0, isPrerelease: false}` |
-| Parse v10.20.30 | `tag: "v10.20.30"` | `{major: 10, minor: 20, patch: 30, isPrerelease: false}` |
-| Parse 1.2.3 (no v) | `tag: "1.2.3"` | `{major: 1, minor: 2, patch: 3, isPrerelease: false, original: "1.2.3"}` |
-| Parse 2.0.0 (no v) | `tag: "2.0.0"` | `{major: 2, minor: 0, patch: 0, isPrerelease: false}` |
-| Parse refs/tags/v1.2.3 | `tag: "refs/tags/v1.2.3"` | `{major: 1, minor: 2, patch: 3, isPrerelease: false, original: "refs/tags/v1.2.3"}` |
-| Parse refs/tags/1.2.3 | `tag: "refs/tags/1.2.3"` | `{major: 1, minor: 2, patch: 3, isPrerelease: false}` |
-| Prerelease v1.2.3-beta.1 | `tag: "v1.2.3-beta.1"` | `{major: 1, minor: 2, patch: 3, isPrerelease: true, prerelease: "beta.1"}` |
-| Prerelease 1.2.3-alpha | `tag: "1.2.3-alpha"` | `{major: 1, minor: 2, patch: 3, isPrerelease: true, prerelease: "alpha"}` |
-| Prerelease v2.0.0-rc.1.2 | `tag: "v2.0.0-rc.1.2"` | `{major: 2, minor: 0, patch: 0, isPrerelease: true, prerelease: "rc.1.2"}` |
-| Build metadata v1.2.3+build.123 | `tag: "v1.2.3+build.123"` | `{major: 1, minor: 2, patch: 3, build: "build.123", isPrerelease: false}` |
-| Prerelease + build v1.2.3-beta.1+build.456 | `tag: "v1.2.3-beta.1+build.456"` | `{major: 1, minor: 2, patch: 3, prerelease: "beta.1", build: "build.456", isPrerelease: true}` |
-| Invalid format | `tag: "invalid"` | Throws error: "Invalid semantic version format" |
-| Missing patch v1.2 | `tag: "v1.2"` | Throws error: "Invalid semantic version format" |
-| Non-numeric v1.2.x | `tag: "v1.2.x"` | Throws error: "Invalid semantic version format" |
-
-#### Unit Tests: `createTagName()` Function
-
-| Test Case | Input | Expected Output |
-|-----------|-------|----------------|
-| Major tag default prefix | `prefix: "v", major: 2` | `"v2"` |
-| Major tag custom prefix | `prefix: "release-", major: 3` | `"release-3"` |
-| Minor tag default prefix | `prefix: "v", major: 2, minor: 3` | `"v2.3"` |
-| Minor tag custom prefix | `prefix: "release-", major: 1, minor: 2` | `"release-1.2"` |
-| Zero major version | `prefix: "v", major: 0` | `"v0"` |
-| Zero minor version | `prefix: "v", major: 0, minor: 0` | `"v0.0"` |
-| Large version numbers | `prefix: "v", major: 10, minor: 20` | `"v10.20"` |
-
-#### Integration Tests: Complete Action Workflow
-
-| Test # | Test Name | Inputs | Expected Outputs | Expected Behavior |
-|--------|-----------|--------|------------------|-------------------|
-| 1 | Tag with v prefix | `tag: "v1.2.3"`<br>`updateMinor: true`<br>`verbose: true` | `majorTag: "v1"`<br>`minorTag: "v1.2"` | Creates `v1` and `v1.2` tags pointing to `v1.2.3` commit SHA |
-| 2 | Tag without v prefix | `tag: "2.0.0"`<br>`updateMinor: true` | `majorTag: "v2"`<br>`minorTag: "v2.0"` | Creates `v2` and `v2.0` tags pointing to `2.0.0` commit SHA |
-| 3 | Different refTag | `tag: "3.0.0"`<br>`refTag: "HEAD"`<br>`updateMinor: false` | `majorTag: "v3"` | Creates `v3` tag pointing to HEAD commit (not `3.0.0` tag commit) |
-| 4 | Prerelease skipping | `tag: "v4.0.0-beta.1"`<br>`updateMinor: false`<br>`ignorePrerelease: true` | Action fails | `setFailed()` called, no tags created |
-| 5 | Custom prefix | `tag: "5.1.0"`<br>`prefix: "release-"`<br>`updateMinor: true` | `majorTag: "release-5"`<br>`minorTag: "release-5.1"` | Creates `release-5` and `release-5.1` tags with custom prefix |
-| 6 | Major tag only | `tag: "v6.1.0"`<br>`updateMinor: false` | `majorTag: "v6"` | Creates only `v6` tag, `v6.1` tag NOT created |
-| 7 | Update existing tag | `tag: "v7.1.0"`<br>`updateMinor: false`<br>(v7 tag already exists pointing to v7.0.0) | `majorTag: "v7"` | Updates existing `v7` tag to point to `v7.1.0` commit (force update) |
-| 8 | Prerelease allowed | `tag: "v8.0.0-rc.1"`<br>`ignorePrerelease: false`<br>`updateMinor: false` | `majorTag: "v8"` | Creates `v8` tag for prerelease version when `ignorePrerelease: false` |
-| 9 | RefTag different commit | `tag: "v9.0.0"`<br>`refTag: "HEAD"`<br>`updateMinor: false`<br>(v9.0.0 points to previous commit, HEAD is newer) | `majorTag: "v9"` | Creates `v9` tag pointing to HEAD commit (different from `v9.0.0` tag commit) |
-| 10 | Zero versions | `tag: "v0.1.0"`<br>`updateMinor: true` | `majorTag: "v0"`<br>`minorTag: "v0.1"` | Creates `v0` and `v0.1` tags for zero major version |
-| 11 | Output verification | `tag: "v11.2.3"`<br>`updateMinor: true` | `majorTag: "v11"`<br>`minorTag: "v11.2"` | Verifies `setOutput()` called with correct values for both outputs |
+| Test Case | Input | Expected Behavior |
+|-----------|-------|-------------------|
+| Info message | `logger.info('Test message')` | Calls `core.info()` with message |
+| Warning message | `logger.warning('Warning message')` | Calls `core.warning()` with message |
+| Error message | `logger.error('Error message')` | Calls `core.error()` with message |
+| Debug (verbose=false) | `logger.debug('Debug message')` with `verbose: false` | Calls `core.debug()` with message |
+| Debug (verbose=true) | `logger.debug('Debug message')` with `verbose: true` | Calls `core.info()` with `[DEBUG] Debug message` |
+| Verbose property | `logger.verbose` | Returns the verbose boolean value |
+| Default constructor | `new Logger()` | Creates logger with `verbose: false` |
 
 ## Integration Tests
 
@@ -146,88 +88,70 @@ Tests the complete action workflow using isolated temporary git repositories. Th
 
 - Create temporary git repositories for each test run
 - Mock `@actions/core` to capture outputs and control logging
-- Mock `pushTag` to prevent actual remote pushes (tests verify locally)
-- Use real git CLI commands to verify tag creation and behavior
+- Use real git CLI commands to verify commit information retrieval
 - Clean up temporary repositories after tests complete
 
 ### Test Scenarios
 
-#### Test 1: Tag with v prefix
-- **Input**: Tag `v1.2.3` with `updateMinor: true`
+#### Test 1: Get commit info for HEAD (offset 0)
+- **Input**: `offset: '0'`, `verbose: false`
 - **Verifies**:
-  - Major tag `v1` is created pointing to `v1.2.3` commit
-  - Minor tag `v1.2` is created pointing to `v1.2.3` commit
-  - Outputs `majorTag` and `minorTag` are correctly set
+  - Retrieves information about the current HEAD commit
+  - All outputs are set correctly (sha, shortSha, message, author, authorEmail, date, dateISO)
+  - SHA is 40 characters, short SHA is 7 characters
+  - All outputs are non-empty
 
-#### Test 2: Tag without v prefix
-- **Input**: Tag `2.0.0` with `updateMinor: true`
+#### Test 2: Get commit info for HEAD~1 (offset 1)
+- **Input**: `offset: '1'`, `verbose: false`
 - **Verifies**:
-  - Action handles tags without 'v' prefix
-  - Major tag `v2` and minor tag `v2.0` are created correctly
+  - Retrieves information about the previous commit (HEAD~1)
+  - All outputs match expected values from git
+  - SHA is different from HEAD commit
 
-#### Test 3: Different refTag
-- **Input**: Tag `3.0.0` with `refTag: "HEAD"` and `updateMinor: false`
+#### Test 3: Get commit info for HEAD~2 (offset 2)
+- **Input**: `offset: '2'`, `verbose: false`
 - **Verifies**:
-  - Floating tags point to `HEAD` commit, not the tag commit
-  - Only major tag is created (updateMinor=false)
+  - Retrieves information about two commits before HEAD
+  - All outputs are correct
+  - SHA is different from HEAD and HEAD~1
 
-#### Test 4: Prerelease skipping
-- **Input**: Tag `v4.0.0-beta.1` with `ignorePrerelease: true`
+#### Test 4: Get commit info with negative offset (-1)
+- **Input**: `offset: '-1'`, `verbose: false`
 - **Verifies**:
-  - Action correctly identifies prerelease version
-  - Action fails with appropriate error message
-  - No tags are created when prerelease is ignored
+  - Negative offsets are converted to absolute value
+  - `-1` behaves the same as `1` (both resolve to HEAD~1)
+  - All outputs are correct
 
-#### Test 5: Custom prefix
-- **Input**: Tag `5.1.0` with `prefix: "release-"` and `updateMinor: true`
+#### Test 5: Verbose logging
+- **Input**: `offset: '0'`, `verbose: true`
 - **Verifies**:
-  - Output tags use custom prefix (`release-5`, `release-5.1`)
-  - Version parsing works with tags without prefix
-  - Custom prefix is applied to output tag names
-
-#### Test 6: Major tag only
-- **Input**: Tag `v6.0.0` with `updateMinor: false`
-- **Verifies**:
-  - Only major tag is created (`v6`)
-  - Minor tag is NOT created
-  - Output only includes `majorTag`
-
-#### Test 7: Update existing tag
-- **Input**: Tag `v7.0.0`, update to point to new commit
-- **Verifies**:
-  - Existing tags are updated (not duplicated)
-  - Tags correctly point to new commit SHA
-  - Action handles tag updates gracefully
-
-#### Test 8: Verbose logging
-- **Input**: Tag `v8.0.0` with `verbose: true`
-- **Verifies**:
-  - Debug logging is enabled
+  - Verbose logging is enabled
   - `ACTIONS_STEP_DEBUG` environment variable is set
-  - Detailed debug output is generated
+  - Debug output is generated
+  - All outputs are still set correctly
 
-#### Test 9: Output verification
-- **Input**: Various tags with different configurations
+#### Test 6: Error handling for invalid offset
+- **Input**: `offset: 'invalid'`
 - **Verifies**:
-  - `majorTag` output is always set correctly
-  - `minorTag` output is set only when `updateMinor: true`
-  - Output values match created tag names
+  - Action fails with clear error message
+  - `setFailed()` is called with appropriate message
+  - Error message indicates invalid offset value
 
-#### Test 10: Error handling
-- **Input**: Invalid inputs or git errors
+#### Test 7: Error handling for offset exceeding history
+- **Input**: `offset: '1000'` (exceeds commit history)
 - **Verifies**:
-  - Action handles errors gracefully
-  - Appropriate error messages are provided
-  - `setFailed` is called with meaningful messages
+  - Action fails with clear error message
+  - `setFailed()` is called
+  - Error message indicates commit not found
 
-#### Test 11: Complex version scenarios
-- **Input**: Tags with various version formats and edge cases
+#### Test 8: Default offset (0) when not provided
+- **Input**: No offset provided (defaults to '0')
 - **Verifies**:
-  - Handles custom prefix tags (e.g., `release-5.1.0`)
-  - Handles version extraction from complex tag names
-  - Works with all supported semver formats
+  - Defaults to offset 0 (HEAD)
+  - Retrieves HEAD commit information
+  - All outputs are set correctly
 
-**Total Integration Tests**: 11 test scenarios
+**Total Integration Tests**: 8 test scenarios
 
 ### Integration Test Architecture
 
@@ -242,7 +166,8 @@ Each test run creates a fresh temporary git repository:
 
 Tests use real git CLI commands:
 - `git init` - Initialize repositories
-- `git tag` - Create tags
+- `git commit` - Create commits for testing
+- `git log` - Retrieve commit information
 - `git rev-parse` - Verify commit SHAs
 - `git config` - Configure git for tests
 
@@ -250,12 +175,10 @@ Tests use real git CLI commands:
 
 **Mocked**:
 - `@actions/core` - Captures outputs and controls logging
-- `pushTag()` - Prevents actual remote pushes (verified locally)
 
 **Real**:
 - Git CLI commands (within temporary repositories)
-- Version parsing logic
-- Tag creation and verification
+- Commit information retrieval logic
 - File system operations
 
 ## Test Environment
@@ -307,10 +230,7 @@ For manual testing of the action:
 
 2. **Set environment variables** (GitHub Actions converts camelCase inputs to uppercase):
    ```bash
-   export INPUT_TAG=v1.2.3
-   export INPUT_UPDATEMINOR=true
-   export INPUT_REFTAG=v1.2.3
-   export INPUT_IGNOREPRERELEASE=true
+   export INPUT_OFFSET=0
    export INPUT_VERBOSE=false
    ```
 
@@ -319,12 +239,12 @@ For manual testing of the action:
    node dist/index.js
    ```
 
-**Note**: Full integration tests with git push operations require a git repository with remote access and are best tested in CI/CD.
+**Note**: Full integration tests with git operations require a git repository and are best tested in CI/CD or using the integration test suite.
 
 ## Test Coverage Goals
 
 Current coverage targets:
-- **Unit Tests**: 100% coverage of `version.ts` functions
+- **Unit Tests**: 100% coverage of `logger.ts`
 - **Integration Tests**: Cover all major use cases and edge cases
 - **Code Coverage**: Aim for >80% overall coverage
 
@@ -388,10 +308,10 @@ If `act` tests fail:
 ### Adding Integration Tests
 
 1. Add test case to `integration.test.ts`
-2. Use `createTestTag()` helper for tag setup
+2. Use `createCommit()` helper for commit setup
 3. Set `process.env.INPUT_*` variables
 4. Call `runAction()` (imported from `../index`)
-5. Verify results using `getTagSha()` helper
+5. Verify results using `getCommitInfoGit()` helper
 6. Add clear console.log messages for visibility
 
 ### Test Best Practices
@@ -403,4 +323,3 @@ If `act` tests fail:
 - ✅ Test both success and failure cases
 - ✅ Verify outputs, not just that code runs
 - ✅ Use helper functions to reduce duplication
-

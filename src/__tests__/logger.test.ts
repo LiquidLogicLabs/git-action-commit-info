@@ -41,6 +41,10 @@ describe('Logger', () => {
 		it('should expose verbose property', () => {
 			expect(logger.verbose).toBe(false);
 		});
+
+		it('should return false for isVerbose()', () => {
+			expect(logger.isVerbose()).toBe(false);
+		});
 	});
 
 	describe('with verbose enabled', () => {
@@ -69,6 +73,10 @@ describe('Logger', () => {
 
 		it('should expose verbose property', () => {
 			expect(logger.verbose).toBe(true);
+		});
+
+		it('should return true for isVerbose()', () => {
+			expect(logger.isVerbose()).toBe(true);
 		});
 	});
 

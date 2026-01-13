@@ -1,4 +1,4 @@
-name: E2E Tests
+name: Tests - E2E
 
 on:
   workflow_call:  # Called by release workflow
@@ -47,6 +47,10 @@ jobs:
           fi
           if [ -z "${{ steps.test-head.outputs.message }}" ]; then
             echo "❌ Message output is empty"
+            exit 1
+          fi
+          if [ -z "${{ steps.test-head.outputs.messageRaw }}" ]; then
+            echo "❌ MessageRaw output is empty"
             exit 1
           fi
           if [ -z "${{ steps.test-head.outputs.author }}" ]; then
