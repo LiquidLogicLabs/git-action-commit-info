@@ -1,6 +1,6 @@
 {
 	"name": "git-commit-info-action",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "GitHub Action to get commit information (SHA, message, author, date) using an offset from HEAD",
 	"main": "dist/index.js",
 	"scripts": {
