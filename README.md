@@ -120,7 +120,7 @@ This retrieves information about the current HEAD commit and sets outputs:
 
 | Input | Description | Required | Default |
 | ------- | ------------- | ---------- | --------- |
-| `offset` | Offset from HEAD to look up. Always goes backwards in history: 0 = HEAD, 1 = HEAD~1, 2 = HEAD~2, etc. Negative offsets are accepted but converted to absolute value (e.g., -1 becomes 1). | No | `'0'` |
+| `offset` | Offset from HEAD to look up. Always goes backwards in history: `0 = HEAD`, `1 = HEAD~1`, `2 = HEAD~2`, etc. Negative offsets are accepted but converted to absolute value (e.g., `-1` becomes `1`). | No | `'0'` |
 | `verbose` | Enable verbose debug logging. Sets ACTIONS_STEP_DEBUG=true environment variable and enables detailed debug output | No | `'false'` |
 
 ## Outputs
