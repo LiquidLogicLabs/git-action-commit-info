@@ -2,31 +2,134 @@ name: E2E Tests
 
 on:
   workflow_call:  # Called by release workflow
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:  # Manual trigger only
 
 permissions:
   contents: read
 
 jobs:
   e2e:
+    # Runs for workflow_call/workflow_dispatch; tag pushes are not used here
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Full history needed for offsets
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Test - Get HEAD commit info (offset 0)
+        id: test-head
+        uses: ./
         with:
-          node-version: "20"
-          cache: "npm"
+          offset: '0'
+          verbose: 'false'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Verify HEAD commit outputs
+        run: |
+          SHA="${{ steps.test-head.outputs.sha }}"
+          SHORT_SHA="${{ steps.test-head.outputs.shortSha }}"
+          
+          if [ -z "$SHA" ]; then
+            echo "❌ SHA output is empty"
+            exit 1
+          fi
+          if [ ${#SHA} -ne 40 ]; then
+            echo "❌ SHA should be 40 characters, got ${#SHA}"
+            exit 1
+          fi
+          if [ -z "$SHORT_SHA" ]; then
+            echo "❌ Short SHA output is empty"
+            exit 1
+          fi
+          if [ ${#SHORT_SHA} -ne 7 ]; then
+            echo "❌ Short SHA should be 7 characters, got ${#SHORT_SHA}"
+            exit 1
+          fi
+          if [ -z "${{ steps.test-head.outputs.message }}" ]; then
+            echo "❌ Message output is empty"
+            exit 1
+          fi
+          if [ -z "${{ steps.test-head.outputs.author }}" ]; then
+            echo "❌ Author output is empty"
+            exit 1
+          fi
+          if [ -z "${{ steps.test-head.outputs.authorEmail }}" ]; then
+            echo "❌ Author email output is empty"
+            exit 1
+          fi
+          if [ -z "${{ steps.test-head.outputs.date }}" ]; then
+            echo "❌ Date output is empty"
+            exit 1
+          fi
+          if [ -z "${{ steps.test-head.outputs.dateISO }}" ]; then
+            echo "❌ Date ISO output is empty"
+            exit 1
+          fi
+          echo "✅ All HEAD commit outputs are valid"
 
-      - name: Build action
-        run: npm run build
+      - name: Test - Get previous commit info (offset 1)
+        id: test-head-1
+        uses: ./
+        with:
+          offset: '1'
+          verbose: 'false'
 
-      - name: Run e2e tests
-        run: npm run test:e2e
+      - name: Verify HEAD~1 commit outputs
+        run: |
+          SHA="${{ steps.test-head-1.outputs.sha }}"
+          
+          if [ -z "$SHA" ]; then
+            echo "❌ SHA output is empty"
+            exit 1
+          fi
+          if [ ${#SHA} -ne 40 ]; then
+            echo "❌ SHA should be 40 characters, got ${#SHA}"
+            exit 1
+          fi
+          # Verify it's different from HEAD
+          if [ "${{ steps.test-head.outputs.sha }}" == "${{ steps.test-head-1.outputs.sha }}" ]; then
+            echo "❌ HEAD~1 SHA should be different from HEAD SHA"
+            exit 1
+          fi
+          echo "✅ HEAD~1 commit outputs are valid and different from HEAD"
+
+      - name: Test - Default offset (should default to 0)
+        id: test-default
+        uses: ./
+        with:
+          verbose: 'false'
+
+      - name: Verify default offset equals HEAD
+        run: |
+          if [ "${{ steps.test-head.outputs.sha }}" != "${{ steps.test-default.outputs.sha }}" ]; then
+            echo "❌ Default offset should equal HEAD (offset 0)"
+            exit 1
+          fi
+          echo "✅ Default offset correctly defaults to 0 (HEAD)"
+
+      - name: Test - Verbose logging
+        id: test-verbose
+        uses: ./
+        with:
+          offset: '0'
+          verbose: 'true'
+
+      - name: Verify verbose mode works
+        run: |
+          if [ -z "${{ steps.test-verbose.outputs.sha }}" ]; then
+            echo "❌ Verbose mode should still produce outputs"
+            exit 1
+          fi
+          echo "✅ Verbose mode works correctly"
+
+      - name: Test Summary
+        run: |
+          echo "## ✅ E2E Tests Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All E2E tests passed successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Scenarios:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ HEAD commit info (offset 0)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Previous commit info (offset 1)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Default offset behavior" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Verbose logging mode" >> $GITHUB_STEP_SUMMARY
