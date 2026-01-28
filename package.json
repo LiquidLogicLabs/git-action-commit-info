@@ -1,51 +1,67 @@
 {
-	"name": "git-commit-info-action",
-	"version": "1.0.2",
-	"description": "GitHub Action to get commit information (SHA, message, author, date) using an offset from HEAD",
-	"main": "dist/index.js",
-	"scripts": {
-		"prepare": "husky install",
-		"build": "tsc && ncc build src/index.ts -o dist --source-map --license licenses.txt",
-		"package": "npm run build",
-		"test": "jest",
-		"test:unit": "jest --testPathIgnorePatterns='integration|e2e'",
-		"test:integration": "jest --testPathPattern=integration",
-		"test:e2e": "jest --testPathPattern=e2e --testTimeout=30000 --passWithNoTests",
-		"test:watch": "jest --watch",
-		"test:coverage": "jest --coverage",
-		"test:act": "act workflow_dispatch -W .github/workflows/test.yml --eventpath .github/workflows/.act/event-workflow_call.json",
-		"test:act:verbose": "act workflow_dispatch -W .github/workflows/test.yml --eventpath .github/workflows/.act/event-workflow_call.json -v",
-		"test:act:ci": "act -W .github/workflows/ci.yml",
-		"lint:act": "act -W .github/workflows/ci.yml -j lint",
-		"lint": "eslint src/**/*.ts --no-warn-ignored",
-		"format": "prettier --write \"src/**/*.ts\"",
-		"release:patch": "standard-version --release-as patch --skip.changelog && git push --follow-tags",
-		"release:minor": "standard-version --release-as minor --skip.changelog && git push --follow-tags",
-		"release:major": "standard-version --release-as major --skip.changelog && git push --follow-tags"
-	},
-	"keywords": [
-		"github-action",
-		"git",
-		"commit",
-		"sha"
-	],
-	"author": "LiquidLogicLabs",
-	"license": "MIT",
-	"dependencies": {
-		"@actions/core": "^1.11.1"
-	},
-	"devDependencies": {
-		"@types/jest": "^29.5.11",
-		"@types/node": "^22.10.7",
-		"@typescript-eslint/eslint-plugin": "^8.50.1",
-		"@typescript-eslint/parser": "^8.50.1",
-		"@vercel/ncc": "^0.38.1",
-		"eslint": "^9.39.2",
-		"jest": "^29.7.0",
-		"prettier": "^3.6.2",
-		"husky": "^9.1.7",
-		"standard-version": "^9.5.0",
-		"ts-jest": "^29.1.1",
-		"typescript": "^5.9.3"
-	}
+  "name": "git-commit-info-action",
+  "version": "1.0.2",
+  "description": "GitHub Action to get commit information (SHA, message, author, date) using an offset from HEAD",
+  "main": "dist/index.js",
+  "scripts": {
+    "prepare": "husky install",
+    "build": "tsc && ncc build src/index.ts -o dist --source-map --license licenses.txt",
+    "package": "npm run build",
+    "test": "jest",
+    "test:unit": "jest --testPathIgnorePatterns='integration|e2e'",
+    "test:integration": "jest --testPathPattern=integration",
+    "test:e2e": "jest --testPathPattern=e2e --testTimeout=30000 --passWithNoTests",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:act": "act --container-options \"--user $(id -u):$(id -g)\" --env-file .act.env --var-file .act.vars --secret-file .act.secrets workflow_dispatch -W .github/workflows/test.yml --eventpath .github/workflows/.act/event-workflow_call.json",
+    "test:act:verbose": "act --container-options \"--user $(id -u):$(id -g)\" --env-file .act.env --var-file .act.vars --secret-file .act.secrets workflow_dispatch -W .github/workflows/test.yml --eventpath .github/workflows/.act/event-workflow_call.json -v",
+    "test:act:ci": "act --container-options \"--user $(id -u):$(id -g)\" --env-file .act.env --var-file .act.vars --secret-file .act.secrets -W .github/workflows/ci.yml",
+    "lint:act": "act --container-options \"--user $(id -u):$(id -g)\" --env-file .act.env --var-file .act.vars --secret-file .act.secrets -W .github/workflows/ci.yml -j lint",
+    "lint": "eslint src/**/*.ts --no-warn-ignored",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "release:patch": "standard-version --release-as patch --skip.changelog && git push --follow-tags",
+    "release:minor": "standard-version --release-as minor --skip.changelog && git push --follow-tags",
+    "release:major": "standard-version --release-as major --skip.changelog && git push --follow-tags",
+    "version:dry-run": "standard-version --dry-run",
+    "version:patch": "standard-version --release-as patch",
+    "version:minor": "standard-version --release-as minor",
+    "version:major": "standard-version --release-as major",
+    "release:push": "git push --follow-tags origin HEAD",
+    "test:act:ci:push": "act --container-options \"--user $(id -u):$(id -g)\" --env-file .act.env --var-file .act.vars --secret-file .act.secrets -W .github/workflows/ci.yml --eventpath .github/workflows/.act/event-push.json",
+    "test:act:ci:dispatch": "act --container-options \"--user $(id -u):$(id -g)\" --env-file .act.env --var-file .act.vars --secret-file .act.secrets -W .github/workflows/ci.yml --eventpath .github/workflows/.act/event-workflow_dispatch.json",
+    "test:act:ci:with-secrets": "act --container-options \"--user $(id -u):$(id -g)\" --env-file .act.env --var-file .act.vars --secret-file .act.secrets -W .github/workflows/ci.yml",
+    "test:act:e2e": "act --container-options \"--user $(id -u):$(id -g)\" --env-file .act.env --var-file .act.vars --secret-file .act.secrets -W .github/workflows/e2e-tests.yml",
+    "test:act:e2e:dispatch": "act --container-options \"--user $(id -u):$(id -g)\" --env-file .act.env --var-file .act.vars --secret-file .act.secrets -W .github/workflows/e2e-tests.yml --eventpath .github/workflows/.act/event-workflow_dispatch.json",
+    "test:act:e2e:with-secrets": "act --container-options \"--user $(id -u):$(id -g)\" --env-file .act.env --var-file .act.vars --secret-file .act.secrets -W .github/workflows/e2e-tests.yml",
+    "test:act:release:tag": "act --container-options \"--user $(id -u):$(id -g)\" --env-file .act.env --var-file .act.vars --secret-file .act.secrets -W .github/workflows/release.yml --eventpath .github/workflows/.act/event-release.json",
+    "test:act:release:dispatch": "act --container-options \"--user $(id -u):$(id -g)\" --env-file .act.env --var-file .act.vars --secret-file .act.secrets -W .github/workflows/release.yml --eventpath .github/workflows/.act/event-workflow_dispatch.json"
+  },
+  "keywords": [
+    "github-action",
+    "git",
+    "commit",
+    "sha"
+  ],
+  "author": "LiquidLogicLabs",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.11.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "@types/node": "^22.10.7",
+    "@typescript-eslint/eslint-plugin": "^8.50.1",
+    "@typescript-eslint/parser": "^8.50.1",
+    "@vercel/ncc": "^0.38.1",
+    "eslint": "^9.39.2",
+    "jest": "^29.7.0",
+    "prettier": "^3.6.2",
+    "husky": "^9.1.7",
+    "standard-version": "^9.5.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.9.3"
+  },
+  "standard-version": {
+    "tagPrefix": "v"
+  }
 }
