@@ -77,14 +77,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
+        uses: LiquidLogicLabs/git-action-release@v1
         with:
           tag: ${{ github.event.inputs.tag || github.ref_name }}
           name: Release ${{ steps.version.outputs.version }}
           body: ${{ steps.release_notes.outputs.changelog }}
           draft: false
           prerelease: ${{ steps.version.outputs.hasPrerelease == 'true' }}
-          makeLatest: true
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
