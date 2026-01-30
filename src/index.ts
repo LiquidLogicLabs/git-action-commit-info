@@ -10,19 +10,15 @@ export async function run(): Promise<void> {
 	try {
 		// Parse inputs
 		const offsetInput = core.getInput("offset") || "0";
-		const verbose = core.getBooleanInput("verbose");
+		const verboseInput = core.getBooleanInput("verbose");
+		const envStepDebug = (process.env.ACTIONS_STEP_DEBUG || "").toLowerCase();
+		const stepDebugEnabled = core.isDebug() || envStepDebug === "true" || envStepDebug === "1";
+		const verbose = verboseInput || stepDebugEnabled;
 		
 		// Parse and validate offset
 		const offset = parseInt(offsetInput, 10);
 		if (isNaN(offset)) {
 			throw new Error(`Invalid offset value: "${offsetInput}". Offset must be an integer.`);
-		}
-		
-		// Set ACTIONS_STEP_DEBUG if verbose is enabled
-		// Note: This may not work if ACTIONS_STEP_DEBUG isn't set at workflow level
-		// For reliable verbose output, we use Logger which uses core.info() when verbose is true
-		if (verbose) {
-			process.env.ACTIONS_STEP_DEBUG = "true";
 		}
 		
 		const inputs: ActionInputs = {
