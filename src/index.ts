@@ -12,7 +12,7 @@ export async function run(): Promise<void> {
 		const offsetInput = core.getInput("offset") || "0";
 		const verboseInput = core.getBooleanInput("verbose");
 		const envStepDebug = (process.env.ACTIONS_STEP_DEBUG || "").toLowerCase();
-		const stepDebugEnabled = core.isDebug() || envStepDebug === "true" || envStepDebug === "1";
+		const stepDebugEnabled = (typeof core.isDebug === "function" && core.isDebug()) || envStepDebug === "true" || envStepDebug === "1";
 		const verbose = verboseInput || stepDebugEnabled;
 		
 		// Parse and validate offset
