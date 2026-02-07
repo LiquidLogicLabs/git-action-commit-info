@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
+import { getInputs } from "./config";
 import { getCommitInfo } from "./git";
-import { ActionInputs } from "./types";
 import { Logger } from "./logger";
 
 /**
@@ -8,28 +8,12 @@ import { Logger } from "./logger";
  */
 export async function run(): Promise<void> {
 	try {
-		// Parse inputs
-		const offsetInput = core.getInput("offset") || "0";
-		const verboseInput = core.getBooleanInput("verbose");
-		const envStepDebug = (process.env.ACTIONS_STEP_DEBUG || "").toLowerCase();
-		const stepDebugEnabled = (typeof core.isDebug === "function" && core.isDebug()) || envStepDebug === "true" || envStepDebug === "1";
-		const verbose = verboseInput || stepDebugEnabled;
-		
-		// Parse and validate offset
-		const offset = parseInt(offsetInput, 10);
-		if (isNaN(offset)) {
-			throw new Error(`Invalid offset value: "${offsetInput}". Offset must be an integer.`);
-		}
-		
-		const inputs: ActionInputs = {
-			offset,
-			verbose,
-		};
+		const inputs = getInputs();
 		
 		// Create logger instance
-		const logger = new Logger(verbose);
+		const logger = new Logger(inputs.verbose);
 		
-		if (verbose) {
+		if (inputs.verbose) {
 			logger.info("🔍 Verbose logging enabled");
 		}
 		logger.debug("Action inputs:");
@@ -37,8 +21,8 @@ export async function run(): Promise<void> {
 		logger.debug(`  verbose: ${inputs.verbose}`);
 		
 		// Get commit information
-		logger.info(`Getting commit info for offset: ${offset}`);
-		const commitInfo = await getCommitInfo(offset, logger);
+		logger.info(`Getting commit info for offset: ${inputs.offset}`);
+		const commitInfo = await getCommitInfo(inputs.offset, logger);
 		
 		// Set outputs
 		core.setOutput("sha", commitInfo.sha);
