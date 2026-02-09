@@ -29,13 +29,13 @@ A simple GitHub Action that retrieves commit information (SHA, message, author, 
 
 This retrieves information about the current HEAD commit and sets outputs:
 - `sha`: Full commit SHA (40 characters)
-- `shortSha`: Short commit SHA (7 characters)
+- `short-sha`: Short commit SHA (7 characters)
 - `message`: Commit message (first line/subject)
-- `messageRaw`: Full commit message (includes all lines, preserves newlines)
+- `message-raw`: Full commit message (includes all lines, preserves newlines)
 - `author`: Author name
-- `authorEmail`: Author email address
+- `author-email`: Author email address
 - `date`: Commit date (ISO format)
-- `dateISO`: Commit date in ISO 8601 format
+- `date-iso`: Commit date in ISO 8601 format
 
 ### Get Previous Commit Info (HEAD~1)
 
@@ -61,7 +61,7 @@ This retrieves information about the current HEAD commit and sets outputs:
     echo "Commit SHA: ${{ steps.commit-info.outputs.sha }}"
     echo "Short SHA: ${{ steps.commit-info.outputs.shortSha }}"
     echo "Message: ${{ steps.commit-info.outputs.message }}"
-    echo "Full Message: ${{ steps.commit-info.outputs.messageRaw }}"
+    echo "Full Message: ${{ steps.commit-info.outputs.message-raw }}"
     echo "Author: ${{ steps.commit-info.outputs.author }}"
 ```
 
@@ -94,9 +94,9 @@ This retrieves information about the current HEAD commit and sets outputs:
     echo "Full SHA: ${{ steps.commit-info.outputs.sha }}"
     echo "Short SHA: ${{ steps.commit-info.outputs.shortSha }}"
     echo "Message: ${{ steps.commit-info.outputs.message }}"
-    echo "Full Message: ${{ steps.commit-info.outputs.messageRaw }}"
-    echo "Author: ${{ steps.commit-info.outputs.author }} <${{ steps.commit-info.outputs.authorEmail }}>"
-    echo "Date: ${{ steps.commit-info.outputs.dateISO }}"
+    echo "Full Message: ${{ steps.commit-info.outputs.message-raw }}"
+    echo "Author: ${{ steps.commit-info.outputs.author }} <${{ steps.commit-info.outputs.author-email }}>"
+    echo "Date: ${{ steps.commit-info.outputs.date-iso }}"
 
 - name: Use Commit SHA in Another Step
   run: |
@@ -128,13 +128,17 @@ This retrieves information about the current HEAD commit and sets outputs:
 | Output | Description |
 | -------- | ------------- |
 | `sha` | Full commit SHA (40 characters) |
-| `shortSha` | Short commit SHA (7 characters) |
+| `short-sha` | Short commit SHA (7 characters) |
 | `message` | Commit message (first line/subject) |
-| `messageRaw` | Full commit message (includes all lines, preserves newlines) |
+| `message-raw` | Full commit message (includes all lines, preserves newlines) |
 | `author` | Author name |
-| `authorEmail` | Author email address |
+| `author-email` | Author email address |
 | `date` | Commit date (ISO format) |
-| `dateISO` | Commit date in ISO 8601 format |
+| `date-iso` | Commit date in ISO 8601 format |
+
+## Permissions
+
+No special permissions are required. Typical workflows need `contents: read` for checkout.
 
 ## Examples
 
@@ -191,7 +195,7 @@ If the offset exceeds the commit history, the action will fail with a clear erro
 1. **Offset Calculation**: The action calculates the git reference from the offset (e.g., `HEAD~1` for offset 1, `HEAD` for offset 0)
 2. **Git Command Execution**: Uses `git log -1` with a custom format to retrieve all commit information in one call
 3. **Output Parsing**: Parses the git log output and extracts commit metadata
-4. **Output Setting**: Sets all outputs (sha, shortSha, message, author, authorEmail, date, dateISO) for use in subsequent workflow steps
+4. **Output Setting**: Sets all outputs (sha, sha, short-sha, message, author, author-email, date, date-iso) for use in subsequent workflow steps
 
 ## Offset Behavior
 
