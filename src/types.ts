@@ -18,4 +18,5 @@ export interface CommitInfo {
 export interface ActionInputs {
   offset: number;
   verbose: boolean;
+  debugMode: boolean;
 }

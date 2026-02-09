@@ -27,10 +27,10 @@ export async function getCommitInfo(offset: number, logger: Logger): Promise<Com
 	// Build git reference: HEAD for offset 0, HEAD~{offset} for others
 	const gitRef = absOffset === 0 ? "HEAD" : `HEAD~${absOffset}`;
 	
-	logger.debug(`Getting commit info for offset ${offset} (git ref: ${gitRef})`);
-	
+	logger.verboseInfo(`Getting commit info for offset ${offset} (git ref: ${gitRef})`);
+
 	const cwd = getGitWorkingDirectory();
-	logger.debug(`Using git working directory: ${cwd}`);
+	logger.verboseInfo(`Using git working directory: ${cwd}`);
 	
 	// Use git log to get all commit info in one call with pipe-delimited format
 	// Format: %H|%h|%s|%an|%ae|%ai|%ci
@@ -88,12 +88,12 @@ export async function getCommitInfo(offset: number, logger: Logger): Promise<Com
 		await exec("git", ["log", "-1", "--format=%B", gitRef], messageRawOptions);
 		const messageRaw = messageRawOutput.trim();
 		
-		logger.debug(`Resolved commit SHA: ${sha}`);
-		logger.debug(`Short SHA: ${shortSha}`);
-		logger.debug(`Message: ${message}`);
-		logger.debug(`Message (full): ${messageRaw.split('\n').length} lines`);
-		logger.debug(`Author: ${author} <${authorEmail}>`);
-		logger.debug(`Date: ${committerDate}`);
+		logger.verboseInfo(`Resolved commit SHA: ${sha}`);
+		logger.verboseInfo(`Short SHA: ${shortSha}`);
+		logger.verboseInfo(`Message: ${message}`);
+		logger.verboseInfo(`Message (full): ${messageRaw.split('\n').length} lines`);
+		logger.verboseInfo(`Author: ${author} <${authorEmail}>`);
+		logger.verboseInfo(`Date: ${committerDate}`);
 		logger.debug(`Resolved commit info: SHA=${sha}, shortSha=${shortSha}, message=${message}`);
 		
 		const commitInfo: CommitInfo = {

@@ -35,16 +35,21 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getInputs = getInputs;
 const core = __importStar(require("@actions/core"));
+function parseBoolean(val) {
+    return val?.toLowerCase() === 'true' || val === '1';
+}
 function getInputs() {
     const offsetInput = core.getInput('offset') || '0';
     const verboseInput = core.getBooleanInput('verbose');
-    const envStepDebug = (process.env.ACTIONS_STEP_DEBUG || '').toLowerCase();
-    const stepDebugEnabled = (typeof core.isDebug === 'function' && core.isDebug()) || envStepDebug === 'true' || envStepDebug === '1';
-    const verbose = verboseInput || stepDebugEnabled;
+    const debugMode = (typeof core.isDebug === 'function' && core.isDebug()) ||
+        parseBoolean(process.env.ACTIONS_STEP_DEBUG) ||
+        parseBoolean(process.env.ACTIONS_RUNNER_DEBUG) ||
+        parseBoolean(process.env.RUNNER_DEBUG);
+    const verbose = verboseInput || debugMode;
     const offset = parseInt(offsetInput, 10);
     if (isNaN(offset)) {
         throw new Error(`Invalid offset value: "${offsetInput}". Offset must be an integer.`);
     }
-    return { offset, verbose };
+    return { offset, verbose, debugMode };
 }
 //# sourceMappingURL=config.js.map

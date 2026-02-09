@@ -27,7 +27,7 @@ jobs:
       - name: Verify HEAD commit outputs
         run: |
           SHA="${{ steps.test-head.outputs.sha }}"
-          SHORT_SHA="${{ steps.test-head.outputs.shortSha }}"
+          SHORT_SHA="${{ steps.test-head.outputs.short-sha }}"
           
           if [ -z "$SHA" ]; then
             echo "❌ SHA output is empty"
@@ -49,7 +49,7 @@ jobs:
             echo "❌ Message output is empty"
             exit 1
           fi
-          if [ -z "${{ steps.test-head.outputs.messageRaw }}" ]; then
+          if [ -z "${{ steps.test-head.outputs.message-raw }}" ]; then
             echo "❌ MessageRaw output is empty"
             exit 1
           fi
@@ -57,7 +57,7 @@ jobs:
             echo "❌ Author output is empty"
             exit 1
           fi
-          if [ -z "${{ steps.test-head.outputs.authorEmail }}" ]; then
+          if [ -z "${{ steps.test-head.outputs.author-email }}" ]; then
             echo "❌ Author email output is empty"
             exit 1
           fi
@@ -65,7 +65,7 @@ jobs:
             echo "❌ Date output is empty"
             exit 1
           fi
-          if [ -z "${{ steps.test-head.outputs.dateISO }}" ]; then
+          if [ -z "${{ steps.test-head.outputs.date-iso }}" ]; then
             echo "❌ Date ISO output is empty"
             exit 1
           fi

@@ -13,19 +13,19 @@ inputs:
 outputs:
   sha:
     description: 'Full commit SHA (40 characters)'
-  shortSha:
+  short-sha:
     description: 'Short commit SHA (7 characters)'
   message:
     description: 'Commit message (first line/subject)'
-  messageRaw:
+  message-raw:
     description: 'Full commit message (includes all lines, preserves newlines)'
   author:
     description: 'Author name'
-  authorEmail:
+  author-email:
     description: 'Author email address'
   date:
     description: 'Commit date (ISO format)'
-  dateISO:
+  date-iso:
     description: 'Commit date in ISO 8601 format'
 runs:
   using: 'node20'

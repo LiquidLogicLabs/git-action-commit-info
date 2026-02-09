@@ -25684,17 +25684,22 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getInputs = getInputs;
 const core = __importStar(__nccwpck_require__(7484));
+function parseBoolean(val) {
+    return val?.toLowerCase() === 'true' || val === '1';
+}
 function getInputs() {
     const offsetInput = core.getInput('offset') || '0';
     const verboseInput = core.getBooleanInput('verbose');
-    const envStepDebug = (process.env.ACTIONS_STEP_DEBUG || '').toLowerCase();
-    const stepDebugEnabled = (typeof core.isDebug === 'function' && core.isDebug()) || envStepDebug === 'true' || envStepDebug === '1';
-    const verbose = verboseInput || stepDebugEnabled;
+    const debugMode = (typeof core.isDebug === 'function' && core.isDebug()) ||
+        parseBoolean(process.env.ACTIONS_STEP_DEBUG) ||
+        parseBoolean(process.env.ACTIONS_RUNNER_DEBUG) ||
+        parseBoolean(process.env.RUNNER_DEBUG);
+    const verbose = verboseInput || debugMode;
     const offset = parseInt(offsetInput, 10);
     if (isNaN(offset)) {
         throw new Error(`Invalid offset value: "${offsetInput}". Offset must be an integer.`);
     }
-    return { offset, verbose };
+    return { offset, verbose, debugMode };
 }
 
 
@@ -25763,9 +25768,9 @@ async function getCommitInfo(offset, logger) {
     const absOffset = Math.abs(offset);
     // Build git reference: HEAD for offset 0, HEAD~{offset} for others
     const gitRef = absOffset === 0 ? "HEAD" : `HEAD~${absOffset}`;
-    logger.debug(`Getting commit info for offset ${offset} (git ref: ${gitRef})`);
+    logger.verboseInfo(`Getting commit info for offset ${offset} (git ref: ${gitRef})`);
     const cwd = getGitWorkingDirectory();
-    logger.debug(`Using git working directory: ${cwd}`);
+    logger.verboseInfo(`Using git working directory: ${cwd}`);
     // Use git log to get all commit info in one call with pipe-delimited format
     // Format: %H|%h|%s|%an|%ae|%ai|%ci
     // %H: full SHA (40 chars)
@@ -25814,12 +25819,12 @@ async function getCommitInfo(offset, logger) {
         };
         await (0, exec_1.exec)("git", ["log", "-1", "--format=%B", gitRef], messageRawOptions);
         const messageRaw = messageRawOutput.trim();
-        logger.debug(`Resolved commit SHA: ${sha}`);
-        logger.debug(`Short SHA: ${shortSha}`);
-        logger.debug(`Message: ${message}`);
-        logger.debug(`Message (full): ${messageRaw.split('\n').length} lines`);
-        logger.debug(`Author: ${author} <${authorEmail}>`);
-        logger.debug(`Date: ${committerDate}`);
+        logger.verboseInfo(`Resolved commit SHA: ${sha}`);
+        logger.verboseInfo(`Short SHA: ${shortSha}`);
+        logger.verboseInfo(`Message: ${message}`);
+        logger.verboseInfo(`Message (full): ${messageRaw.split('\n').length} lines`);
+        logger.verboseInfo(`Author: ${author} <${authorEmail}>`);
+        logger.verboseInfo(`Date: ${committerDate}`);
         logger.debug(`Resolved commit info: SHA=${sha}, shortSha=${shortSha}, message=${message}`);
         const commitInfo = {
             sha,
@@ -25896,34 +25901,38 @@ async function run() {
     try {
         const inputs = (0, config_1.getInputs)();
         // Create logger instance
-        const logger = new logger_1.Logger(inputs.verbose);
+        const logger = new logger_1.Logger(inputs.verbose, inputs.debugMode);
         if (inputs.verbose) {
-            logger.info("🔍 Verbose logging enabled");
+            logger.info("Verbose logging enabled");
         }
-        logger.debug("Action inputs:");
-        logger.debug(`  offset: ${inputs.offset}`);
-        logger.debug(`  verbose: ${inputs.verbose}`);
+        if (inputs.debugMode) {
+            logger.info("Debug mode enabled");
+        }
+        logger.verboseInfo("Action inputs:");
+        logger.verboseInfo(`  offset: ${inputs.offset}`);
+        logger.verboseInfo(`  verbose: ${inputs.verbose}`);
+        logger.verboseInfo(`  debugMode: ${inputs.debugMode}`);
         // Get commit information
         logger.info(`Getting commit info for offset: ${inputs.offset}`);
         const commitInfo = await (0, git_1.getCommitInfo)(inputs.offset, logger);
         // Set outputs
         core.setOutput("sha", commitInfo.sha);
-        core.setOutput("shortSha", commitInfo.shortSha);
+        core.setOutput("short-sha", commitInfo.shortSha);
         core.setOutput("message", commitInfo.message);
-        core.setOutput("messageRaw", commitInfo.messageRaw);
+        core.setOutput("message-raw", commitInfo.messageRaw);
         core.setOutput("author", commitInfo.author);
-        core.setOutput("authorEmail", commitInfo.authorEmail);
+        core.setOutput("author-email", commitInfo.authorEmail);
         core.setOutput("date", commitInfo.date);
-        core.setOutput("dateISO", commitInfo.dateISO);
+        core.setOutput("date-iso", commitInfo.dateISO);
         // Log summary
-        logger.info("✅ Successfully retrieved commit information");
-        logger.info(`📊 Commit Info:`);
+        logger.info("Successfully retrieved commit information");
+        logger.info(`Commit Info:`);
         logger.info(`   SHA: ${commitInfo.sha}`);
         logger.info(`   Short SHA: ${commitInfo.shortSha}`);
         logger.info(`   Message: ${commitInfo.message}`);
         logger.info(`   Author: ${commitInfo.author} <${commitInfo.authorEmail}>`);
         logger.info(`   Date: ${commitInfo.dateISO}`);
-        logger.debug("Action completed successfully");
+        logger.verboseInfo("Action completed successfully");
     }
     catch (error) {
         if (error instanceof Error) {
@@ -25992,8 +26001,10 @@ const core = __importStar(__nccwpck_require__(7484));
  */
 class Logger {
     verbose;
-    constructor(verbose = false) {
-        this.verbose = verbose;
+    debugMode;
+    constructor(verbose = false, debugMode = false) {
+        this.verbose = verbose || debugMode;
+        this.debugMode = debugMode;
     }
     /**
      * Log an info message
@@ -26014,11 +26025,21 @@ class Logger {
         core.error(message);
     }
     /**
-     * Log a debug message - uses core.info() when verbose is true so it always shows
-     * Falls back to core.debug() when verbose is false (for when ACTIONS_STEP_DEBUG is set at workflow level)
+     * Log a verbose info message - only shown when verbose is true
+     * Use for operational info (input values, git command results, commit info)
+     */
+    verboseInfo(message) {
+        if (this.verbose) {
+            core.info(message);
+        }
+    }
+    /**
+     * Log a debug message - uses core.info() with [DEBUG] prefix when debugMode is true
+     * Falls back to core.debug() when debugMode is false (for when ACTIONS_STEP_DEBUG is set at workflow level)
+     * Use for raw data dumps
      */
     debug(message) {
-        if (this.verbose) {
+        if (this.debugMode) {
             core.info(`[DEBUG] ${message}`);
         }
         else {
@@ -26030,6 +26051,12 @@ class Logger {
      */
     isVerbose() {
         return this.verbose;
+    }
+    /**
+     * Check if debug mode is enabled
+     */
+    isDebug() {
+        return this.debugMode;
     }
 }
 exports.Logger = Logger;
