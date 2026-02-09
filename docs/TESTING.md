@@ -97,7 +97,7 @@ Tests the complete action workflow using isolated temporary git repositories. Th
 - **Input**: `offset: '0'`, `verbose: false`
 - **Verifies**:
   - Retrieves information about the current HEAD commit
-  - All outputs are set correctly (sha, shortSha, message, author, authorEmail, date, dateISO)
+  - All outputs are set correctly (sha, short-sha, message, author, author-email, date, date-iso)
   - SHA is 40 characters, short SHA is 7 characters
   - All outputs are non-empty
 

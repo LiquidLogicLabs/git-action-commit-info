@@ -59,7 +59,7 @@ This retrieves information about the current HEAD commit and sets outputs:
 - name: Use Commit Info
   run: |
     echo "Commit SHA: ${{ steps.commit-info.outputs.sha }}"
-    echo "Short SHA: ${{ steps.commit-info.outputs.shortSha }}"
+    echo "Short SHA: ${{ steps.commit-info.outputs.short-sha }}"
     echo "Message: ${{ steps.commit-info.outputs.message }}"
     echo "Full Message: ${{ steps.commit-info.outputs.message-raw }}"
     echo "Author: ${{ steps.commit-info.outputs.author }}"
@@ -92,7 +92,7 @@ This retrieves information about the current HEAD commit and sets outputs:
 - name: Display Commit Info
   run: |
     echo "Full SHA: ${{ steps.commit-info.outputs.sha }}"
-    echo "Short SHA: ${{ steps.commit-info.outputs.shortSha }}"
+    echo "Short SHA: ${{ steps.commit-info.outputs.short-sha }}"
     echo "Message: ${{ steps.commit-info.outputs.message }}"
     echo "Full Message: ${{ steps.commit-info.outputs.message-raw }}"
     echo "Author: ${{ steps.commit-info.outputs.author }} <${{ steps.commit-info.outputs.author-email }}>"
@@ -174,8 +174,8 @@ No special permissions are required. Typical workflows need `contents: read` for
 
 - name: Compare Commits
   run: |
-    echo "Previous: ${{ steps.prev-commit.outputs.shortSha }} - ${{ steps.prev-commit.outputs.message }}"
-    echo "Current: ${{ steps.current-commit.outputs.shortSha }} - ${{ steps.current-commit.outputs.message }}"
+    echo "Previous: ${{ steps.prev-commit.outputs.short-sha }} - ${{ steps.prev-commit.outputs.message }}"
+    echo "Current: ${{ steps.current-commit.outputs.short-sha }} - ${{ steps.current-commit.outputs.message }}"
 ```
 
 ### Error Handling
