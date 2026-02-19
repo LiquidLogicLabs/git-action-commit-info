@@ -241,7 +241,7 @@ npm run test:coverage # Generate coverage report
 
 ## Releasing
 
-This project uses [`standard-version`](https://github.com/conventional-changelog/standard-version) for automated release tag creation. Release notes are automatically generated from PRs and commits using `release-changelog-builder-action`.
+This project uses npm lifecycle hooks (`preversion`/`version`/`postversion`) with `conventional-changelog-cli` for versioning and changelog generation. Release notes are automatically generated from PRs and commits using `release-changelog-builder-action`.
 
 ### Pre-Release Checklist
 
@@ -283,11 +283,13 @@ npm run release:major
 
 ### What Happens
 
-The release command automatically:
-1. Bumps the version in `package.json` (patch/minor/major)
-2. Creates a git commit with message like "chore(release): 1.0.1"
-3. Creates a git tag (e.g., `v1.0.1`)
-4. Pushes the tag and commit to trigger the GitHub Actions release workflow
+The release command triggers `npm version` which automatically:
+1. Runs tests via the `preversion` hook
+2. Bumps the version in `package.json` (patch/minor/major)
+3. Updates CHANGELOG.md from conventional commits via the `version` hook
+4. Creates a git commit with message like "chore(release): 1.0.1"
+5. Creates a git tag (e.g., `v1.0.1`)
+6. Pushes the tag and commit to trigger the GitHub Actions release workflow via the `postversion` hook
 
 The release workflow then:
 - Runs CI and E2E tests as a safety check
@@ -295,8 +297,6 @@ The release workflow then:
 - Generates release notes from PRs/commits using `release-changelog-builder-action`
 - Creates a GitHub release
 - Creates/updates floating version tags (`v1`, `v1.0`, `latest`)
-
-**Note**: This project uses `--skip.changelog` with `standard-version` because release notes are automatically generated from PRs and commits in the release workflow.
 
 ## Troubleshooting
 
