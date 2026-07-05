@@ -79,7 +79,7 @@ This retrieves information about the current HEAD commit and sets outputs:
 
 ```yaml
 - name: Checkout code
-  uses: actions/checkout@v4
+  uses: actions/checkout@v6
   with:
     fetch-depth: 0  # Full history needed for offsets
 
@@ -227,7 +227,7 @@ The action will fail with clear error messages in the following cases:
 - For offsets greater than 0, `fetch-depth: 0` may be required in the checkout step to get full history:
 
 ```yaml
-- uses: actions/checkout@v4
+- uses: actions/checkout@v6
   with:
     fetch-depth: 0  # Full history needed for offsets > 0
 ```
