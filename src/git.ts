@@ -66,7 +66,7 @@ export async function getCommitInfo(offset: number, logger: Logger): Promise<Com
 			throw new Error(`Unexpected git log format: ${result}`);
 		}
 		
-		const [sha, shortSha, message, author, authorEmail, authorDate, committerDate] = parts;
+		const [sha, shortSha, message, author, authorEmail, , committerDate] = parts;
 		
 		// Validate SHA format
 		if (!sha || sha.length !== 40) {
