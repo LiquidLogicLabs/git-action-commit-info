@@ -17,6 +17,7 @@
     "test:act:ci": "act --container-options \"--user $(id -u):$(id -g)\" --env-file .act.env --var-file .act.vars --secret-file .act.secrets -W .github/workflows/ci.yml",
     "lint:act": "act --container-options \"--user $(id -u):$(id -g)\" --env-file .act.env --var-file .act.vars --secret-file .act.secrets -W .github/workflows/ci.yml -j lint",
     "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
