@@ -1,3 +1,13 @@
+## [2.0.4](https://github.com/LiquidLogicLabs/git-action-commit-info/compare/v2.0.3...v2.0.4) (2026-09-03)
+
+
+### Bug Fixes
+
+* **lint:** quote eslint glob so all of src/ is linted ([8b1d660](https://github.com/LiquidLogicLabs/git-action-commit-info/commit/8b1d660a17e9c0b39a3dc76219a86069be43eb2a))
+* **lint:** remove unused authorDate from commit-info destructuring ([0d22168](https://github.com/LiquidLogicLabs/git-action-commit-info/commit/0d221688710debf47fb6a07e2b04972946ff012f))
+
+
+
 ## [2.0.3](https://github.com/LiquidLogicLabs/git-action-commit-info/compare/v2.0.2...v2.0.3) (2026-07-05)
 
 
