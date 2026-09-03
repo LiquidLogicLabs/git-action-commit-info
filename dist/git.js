@@ -90,7 +90,7 @@ async function getCommitInfo(offset, logger) {
         if (parts.length !== 7) {
             throw new Error(`Unexpected git log format: ${result}`);
         }
-        const [sha, shortSha, message, author, authorEmail, authorDate, committerDate] = parts;
+        const [sha, shortSha, message, author, authorEmail, , committerDate] = parts;
         // Validate SHA format
         if (!sha || sha.length !== 40) {
             throw new Error(`Invalid commit SHA format: ${sha}`);
