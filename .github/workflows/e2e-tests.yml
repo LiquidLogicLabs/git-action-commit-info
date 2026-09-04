@@ -17,21 +17,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
+          # No step in this job pushes; the credential is not needed.
+          persist-credentials: false
           fetch-depth: 0  # Full history needed for offsets
 
       - name: Test - Get HEAD commit info (offset 0)
         id: test-head
-        uses: ./
+        uses: ./  # zizmor: ignore[self-repository] — local ACTION reference under test, not a reusable-workflow call; $/ does not apply
         with:
           offset: '0'
           verbose: 'false'
 
       - name: Verify HEAD commit outputs
+        env:
+          Z_TEST_HEAD_OUTPUTS_SHA: ${{ steps.test-head.outputs.sha }}
+          Z_TEST_HEAD_OUTPUTS_SHORT_SHA: ${{ steps.test-head.outputs.short-sha }}
+          Z_TEST_HEAD_OUTPUTS_MESSAGE: ${{ steps.test-head.outputs.message }}
+          Z_TEST_HEAD_OUTPUTS_MESSAGE_RAW: ${{ steps.test-head.outputs.message-raw }}
+          Z_TEST_HEAD_OUTPUTS_AUTHOR: ${{ steps.test-head.outputs.author }}
+          Z_TEST_HEAD_OUTPUTS_AUTHOR_EMAIL: ${{ steps.test-head.outputs.author-email }}
+          Z_TEST_HEAD_OUTPUTS_DATE: ${{ steps.test-head.outputs.date }}
+          Z_TEST_HEAD_OUTPUTS_DATE_ISO: ${{ steps.test-head.outputs.date-iso }}
         run: |
-          SHA="${{ steps.test-head.outputs.sha }}"
-          SHORT_SHA="${{ steps.test-head.outputs.short-sha }}"
+          SHA="${Z_TEST_HEAD_OUTPUTS_SHA}"
+          SHORT_SHA="${Z_TEST_HEAD_OUTPUTS_SHORT_SHA}"
           
           if [ -z "$SHA" ]; then
             echo "❌ SHA output is empty"
@@ -49,27 +60,27 @@ jobs:
             echo "❌ Short SHA should be 7 characters, got ${#SHORT_SHA}"
             exit 1
           fi
-          if [ -z "${{ steps.test-head.outputs.message }}" ]; then
+          if [ -z "${Z_TEST_HEAD_OUTPUTS_MESSAGE}" ]; then
             echo "❌ Message output is empty"
             exit 1
           fi
-          if [ -z "${{ steps.test-head.outputs.message-raw }}" ]; then
+          if [ -z "${Z_TEST_HEAD_OUTPUTS_MESSAGE_RAW}" ]; then
             echo "❌ MessageRaw output is empty"
             exit 1
           fi
-          if [ -z "${{ steps.test-head.outputs.author }}" ]; then
+          if [ -z "${Z_TEST_HEAD_OUTPUTS_AUTHOR}" ]; then
             echo "❌ Author output is empty"
             exit 1
           fi
-          if [ -z "${{ steps.test-head.outputs.author-email }}" ]; then
+          if [ -z "${Z_TEST_HEAD_OUTPUTS_AUTHOR_EMAIL}" ]; then
             echo "❌ Author email output is empty"
             exit 1
           fi
-          if [ -z "${{ steps.test-head.outputs.date }}" ]; then
+          if [ -z "${Z_TEST_HEAD_OUTPUTS_DATE}" ]; then
             echo "❌ Date output is empty"
             exit 1
           fi
-          if [ -z "${{ steps.test-head.outputs.date-iso }}" ]; then
+          if [ -z "${Z_TEST_HEAD_OUTPUTS_DATE_ISO}" ]; then
             echo "❌ Date ISO output is empty"
             exit 1
           fi
@@ -77,14 +88,17 @@ jobs:
 
       - name: Test - Get previous commit info (offset 1)
         id: test-head-1
-        uses: ./
+        uses: ./  # zizmor: ignore[self-repository] — local ACTION reference under test, not a reusable-workflow call; $/ does not apply
         with:
           offset: '1'
           verbose: 'false'
 
       - name: Verify HEAD~1 commit outputs
+        env:
+          Z_TEST_HEAD_1_OUTPUTS_SHA: ${{ steps.test-head-1.outputs.sha }}
+          Z_TEST_HEAD_OUTPUTS_SHA: ${{ steps.test-head.outputs.sha }}
         run: |
-          SHA="${{ steps.test-head-1.outputs.sha }}"
+          SHA="${Z_TEST_HEAD_1_OUTPUTS_SHA}"
           
           if [ -z "$SHA" ]; then
             echo "❌ SHA output is empty"
@@ -95,7 +109,7 @@ jobs:
             exit 1
           fi
           # Verify it's different from HEAD
-          if [ "${{ steps.test-head.outputs.sha }}" == "${{ steps.test-head-1.outputs.sha }}" ]; then
+          if [ "${Z_TEST_HEAD_OUTPUTS_SHA}" == "${Z_TEST_HEAD_1_OUTPUTS_SHA}" ]; then
             echo "❌ HEAD~1 SHA should be different from HEAD SHA"
             exit 1
           fi
@@ -103,13 +117,16 @@ jobs:
 
       - name: Test - Default offset (should default to 0)
         id: test-default
-        uses: ./
+        uses: ./  # zizmor: ignore[self-repository] — local ACTION reference under test, not a reusable-workflow call; $/ does not apply
         with:
           verbose: 'false'
 
       - name: Verify default offset equals HEAD
+        env:
+          Z_TEST_HEAD_OUTPUTS_SHA: ${{ steps.test-head.outputs.sha }}
+          Z_TEST_DEFAULT_OUTPUTS_SHA: ${{ steps.test-default.outputs.sha }}
         run: |
-          if [ "${{ steps.test-head.outputs.sha }}" != "${{ steps.test-default.outputs.sha }}" ]; then
+          if [ "${Z_TEST_HEAD_OUTPUTS_SHA}" != "${Z_TEST_DEFAULT_OUTPUTS_SHA}" ]; then
             echo "❌ Default offset should equal HEAD (offset 0)"
             exit 1
           fi
@@ -117,14 +134,16 @@ jobs:
 
       - name: Test - Verbose logging
         id: test-verbose
-        uses: ./
+        uses: ./  # zizmor: ignore[self-repository] — local ACTION reference under test, not a reusable-workflow call; $/ does not apply
         with:
           offset: '0'
           verbose: 'true'
 
       - name: Verify verbose mode works
+        env:
+          Z_TEST_VERBOSE_OUTPUTS_SHA: ${{ steps.test-verbose.outputs.sha }}
         run: |
-          if [ -z "${{ steps.test-verbose.outputs.sha }}" ]; then
+          if [ -z "${Z_TEST_VERBOSE_OUTPUTS_SHA}" ]; then
             echo "❌ Verbose mode should still produce outputs"
             exit 1
           fi
@@ -132,12 +151,14 @@ jobs:
 
       - name: Test Summary
         run: |
-          echo "## ✅ E2E Tests Complete" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "All E2E tests passed successfully!" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Test Scenarios:" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ HEAD commit info (offset 0)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Previous commit info (offset 1)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Default offset behavior" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Verbose logging mode" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## ✅ E2E Tests Complete"
+            echo ""
+            echo "All E2E tests passed successfully!"
+            echo ""
+            echo "### Test Scenarios:"
+            echo "- ✅ HEAD commit info (offset 0)"
+            echo "- ✅ Previous commit info (offset 1)"
+            echo "- ✅ Default offset behavior"
+            echo "- ✅ Verbose logging mode"
+          } >> "$GITHUB_STEP_SUMMARY"
