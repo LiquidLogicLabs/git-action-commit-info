@@ -1,4 +1,4 @@
-# Git Commit Info Action
+# Git Commit Info
 
 [![CI](https://github.com/LiquidLogicLabs/git-action-commit-info/actions/workflows/ci.yml/badge.svg)](https://github.com/LiquidLogicLabs/git-action-commit-info/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -22,7 +22,7 @@ A simple GitHub Action that retrieves commit information (SHA, message, author, 
 
 ```yaml
 - name: Get Commit Info
-  uses: LiquidLogicLabs/git-action-commit-info@v1
+  uses: LiquidLogicLabs/git-action-commit-info@v2
   with:
     offset: '0'  # 0 means HEAD (default)
 ```
@@ -41,7 +41,7 @@ This retrieves information about the current HEAD commit and sets outputs:
 
 ```yaml
 - name: Get Previous Commit Info
-  uses: LiquidLogicLabs/git-action-commit-info@v1
+  uses: LiquidLogicLabs/git-action-commit-info@v2
   with:
     offset: '1'  # One commit before HEAD
   id: prev-commit
@@ -51,7 +51,7 @@ This retrieves information about the current HEAD commit and sets outputs:
 
 ```yaml
 - name: Get Commit Info
-  uses: LiquidLogicLabs/git-action-commit-info@v1
+  uses: LiquidLogicLabs/git-action-commit-info@v2
   with:
     offset: '2'  # Two commits before HEAD
   id: commit-info
@@ -69,7 +69,7 @@ This retrieves information about the current HEAD commit and sets outputs:
 
 ```yaml
 - name: Get Commit Info
-  uses: LiquidLogicLabs/git-action-commit-info@v1
+  uses: LiquidLogicLabs/git-action-commit-info@v2
   with:
     offset: '0'
     verbose: true  # Enables detailed debug logging
@@ -84,7 +84,7 @@ This retrieves information about the current HEAD commit and sets outputs:
     fetch-depth: 0  # Full history needed for offsets
 
 - name: Get Commit Info
-  uses: LiquidLogicLabs/git-action-commit-info@v1
+  uses: LiquidLogicLabs/git-action-commit-info@v2
   with:
     offset: '1'  # Previous commit
   id: commit-info
@@ -109,7 +109,7 @@ This retrieves information about the current HEAD commit and sets outputs:
 
 ```yaml
 - name: Get Commit Info with Negative Offset
-  uses: LiquidLogicLabs/git-action-commit-info@v1
+  uses: LiquidLogicLabs/git-action-commit-info@v2
   with:
     offset: '-1'  # Negative offsets are converted to absolute value (same as 1)
 ```
@@ -145,14 +145,14 @@ No special permissions are required. Typical workflows need `contents: read` for
 ### Get Current Commit Info
 
 ```yaml
-- uses: LiquidLogicLabs/git-action-commit-info@v1
+- uses: LiquidLogicLabs/git-action-commit-info@v2
   # offset defaults to 0 (HEAD)
 ```
 
 ### Get Previous Commit Info
 
 ```yaml
-- uses: LiquidLogicLabs/git-action-commit-info@v1
+- uses: LiquidLogicLabs/git-action-commit-info@v2
   with:
     offset: '1'  # HEAD~1
 ```
@@ -161,13 +161,13 @@ No special permissions are required. Typical workflows need `contents: read` for
 
 ```yaml
 - name: Get Previous Commit
-  uses: LiquidLogicLabs/git-action-commit-info@v1
+  uses: LiquidLogicLabs/git-action-commit-info@v2
   with:
     offset: '1'
   id: prev-commit
 
 - name: Get Current Commit
-  uses: LiquidLogicLabs/git-action-commit-info@v1
+  uses: LiquidLogicLabs/git-action-commit-info@v2
   with:
     offset: '0'
   id: current-commit
@@ -184,7 +184,7 @@ If the offset exceeds the commit history, the action will fail with a clear erro
 
 ```yaml
 - name: Get Commit Info (may fail)
-  uses: LiquidLogicLabs/git-action-commit-info@v1
+  uses: LiquidLogicLabs/git-action-commit-info@v2
   with:
     offset: '1000'  # Will fail if repository doesn't have 1000 commits
   continue-on-error: true
@@ -247,7 +247,7 @@ The action provides informative logging at each step:
 Enable verbose logging by setting `verbose: true`:
 
 ```yaml
-- uses: LiquidLogicLabs/git-action-commit-info@v1
+- uses: LiquidLogicLabs/git-action-commit-info@v2
   with:
     offset: '0'
     verbose: true
