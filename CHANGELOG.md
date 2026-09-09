@@ -1,3 +1,13 @@
+## [2.0.6](https://github.com/LiquidLogicLabs/git-action-commit-info/compare/v2.0.5...v2.0.6) (2026-09-09)
+
+
+### Bug Fixes
+
+* **release-notes:** categorise the changelog by conventional-commit type ([b5bf445](https://github.com/LiquidLogicLabs/git-action-commit-info/commit/b5bf44580ff0c660c3dd86d86bd28e0259627866))
+* **release-notes:** drop the dead PR_LIST placeholder ([a29531c](https://github.com/LiquidLogicLabs/git-action-commit-info/commit/a29531c1104afff698629bc46ef7e0ce6c429cd7))
+
+
+
 ## [2.0.5](https://github.com/LiquidLogicLabs/git-action-commit-info/compare/v2.0.4...v2.0.5) (2026-09-04)
 
 
