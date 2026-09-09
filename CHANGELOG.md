@@ -1,3 +1,12 @@
+## [2.0.7](https://github.com/LiquidLogicLabs/git-action-commit-info/compare/v2.0.6...v2.0.7) (2026-09-09)
+
+
+### Bug Fixes
+
+* **release-notes:** categorise revert commits under Maintenance ([f3a458c](https://github.com/LiquidLogicLabs/git-action-commit-info/commit/f3a458c494310e17933c0b270b5d13eceb55669d))
+
+
+
 ## [2.0.6](https://github.com/LiquidLogicLabs/git-action-commit-info/compare/v2.0.5...v2.0.6) (2026-09-09)
 
 
