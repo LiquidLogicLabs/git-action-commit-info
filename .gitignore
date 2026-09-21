@@ -40,10 +40,10 @@ coverage/
 test-file.txt
 
 # AI Tools
-.bmad-core/
 .github/chatmodes/
 # Local dev (act)
 .env.*
 .secrets
 .secrets.*
 .actrc.local
+_bmad-output/
